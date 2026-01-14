@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Division Head Dashboard - MSEDCL Grievance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+            --msedcl-blue: #1976d2;
+            --msedcl-green: #388e3c;
+            --msedcl-orange: #f57c00;
+            --msedcl-purple: #7b1fa2;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .main-content {
+            padding: 20px;
+            background: #f8f9fa;
+            min-height: calc(100vh - 76px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--msedcl-red);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--msedcl-red);
+            display: block;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: block;
+        }
+        
+        /* Quick Actions */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .action-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .action-card:hover {
+            border-color: var(--msedcl-red);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .action-card.primary {
+            border-color: var(--msedcl-red);
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+        }
+        
+        .action-icon {
+            font-size: 2rem;
+            color: var(--msedcl-red);
+            margin-bottom: 1rem;
+        }
+        
+        /* Division Cards */
+        .divisions-grid-horizontal {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .division-card-horizontal {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--msedcl-blue);
+            transition: transform 0.3s ease;
+        }
+        
+        .division-card-horizontal:hover {
+            transform: translateY(-3px);
+        }
+        
+        .division-card-horizontal.current-division {
+            border-left-color: var(--msedcl-red);
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+        }
+        
+        .division-stats-horizontal {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .division-stats-horizontal span {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        /* Issue Type Distribution */
+        .issue-types-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        
+        .issue-type-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .issue-type-item:last-child {
+            border-bottom: none;
+        }
+        
+        .type-name {
+            font-weight: 500;
+            flex: 1;
+        }
+        
+        .type-stats {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .type-bar {
+            width: 100px;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .type-bar-fill {
+            height: 100%;
+            background: var(--msedcl-red);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 1s ease-in-out;
+        }
+        
+        .type-count {
+            font-size: 0.9rem;
+            color: #666;
+            min-width: 80px;
+            text-align: right;
+        }
+        
+        /* Activity Feed */
+        .activity-feed {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+        
+        .log-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .log-item.security {
+            border-left: 3px solid var(--msedcl-orange);
+        }
+        
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        .log-type {
+            font-weight: 600;
+            color: var(--msedcl-orange);
+        }
+        
+        .log-time {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        /* Badge Styles */
+        .badge-priority-high { background-color: #dc3545; }
+        .badge-priority-medium { background-color: #fd7e14; }
+        .badge-priority-low { background-color: #198754; }
+        .badge-priority-critical { background-color: #6f42c1; }
+        
+        .badge-status-pending { background-color: #6c757d; }
+        .badge-status-in-progress { background-color: #0dcaf0; }
+        .badge-status-resolved { background-color: #198754; }
+        .badge-status-assigned { background-color: #ffc107; color: #000; }
+        
+        /* Table Styles */
+        .table-responsive {
+            border-radius: 8px;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .quick-actions-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .divisions-grid-horizontal {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('division_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Division Head Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }} | {{ division_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('division_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_issues') }}">
+                                <i class="fas fa-exclamation-circle"></i> Issues Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_workers') }}">
+                                <i class="fas fa-users"></i> Workers Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_logs') }}">
+                                <i class="fas fa-clipboard-list"></i> System Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile & Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Welcome Section -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-tachometer-alt me-2 text-danger"></i>Division Head Dashboard
+                    </h2>
+                    <div class="text-muted">
+                        Last updated: <span id="currentTime">{{ current_time }}</span>
+                    </div>
+                </div>
+
+                <!-- Quick Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.total_issues }}</span>
+                        <span class="stat-label">Total Issues</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.pending_issues }}</span>
+                        <span class="stat-label">Pending Issues</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.assigned_issues }}</span>
+                        <span class="stat-label">Assigned Issues</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.resolved_issues }}</span>
+                        <span class="stat-label">Resolved Issues</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.total_workers }}</span>
+                        <span class="stat-label">Total Workers</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.available_workers }}</span>
+                        <span class="stat-label">Available Workers</span>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </div>
+                    <div class="card-body">
+                        <div class="quick-actions-grid">
+                            <a href="{{ url_for('division_workers') }}?action=add" class="action-card primary">
+                                <div class="action-icon">
+                                    <i class="fas fa-user-plus"></i>
+                                </div>
+                                <h5>Add New Worker</h5>
+                                <p class="text-muted mb-0">Register new worker to division</p>
+                            </a>
+                            <a href="{{ url_for('division_issues') }}?filter=unassigned" class="action-card">
+                                <div class="action-icon">
+                                    <i class="fas fa-tasks"></i>
+                                </div>
+                                <h5>Assign Issues</h5>
+                                <p class="text-muted mb-0">Assign workers to pending issues</p>
+                            </a>
+                            <a href="{{ url_for('division_issues') }}?filter=critical" class="action-card">
+                                <div class="action-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <h5>Critical Issues</h5>
+                                <p class="text-muted mb-0">View high priority issues</p>
+                            </a>
+                            <a href="{{ url_for('division_logs') }}?type=security" class="action-card">
+                                <div class="action-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h5>Security Logs</h5>
+                                <p class="text-muted mb-0">Monitor login attempts</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Left Column -->
+                    <div class="col-lg-8">
+                        <!-- Issue Type Distribution -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-chart-pie me-2"></i>Issue Type Distribution
+                            </div>
+                            <div class="card-body">
+                                <div class="issue-types-container">
+                                    {% if issue_types %}
+                                        {% for type in issue_types %}
+                                        <div class="issue-type-item" data-percentage="{{ type.percentage }}">
+                                            <div class="type-name">{{ type.issue_type|replace('_', ' ')|title }}</div>
+                                            <div class="type-stats">
+                                                <div class="type-bar">
+                                                    <div class="type-bar-fill" id="type-bar-{{ loop.index }}"></div>
+                                                </div>
+                                                <span class="type-count">{{ type.issue_count }} ({{ type.percentage }}%)</span>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                    <p class="text-muted text-center mb-0">No issue type data available</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Division Status Comparison -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-chart-bar me-2"></i>Live Division Status Comparison
+                            </div>
+                            <div class="card-body">
+                                <div class="divisions-grid-horizontal">
+                                    {% for division in all_divisions_status %}
+                                    <div class="division-card-horizontal {% if division.division_id == session.division_id %}current-division{% endif %}">
+                                        <h5>{{ division.division_name }}</h5>
+                                        {% if division.division_id == session.division_id %}
+                                        <span class="badge bg-success">Your Division</span>
+                                        {% endif %}
+                                        <div class="division-stats-horizontal">
+                                            <span><i class="fas fa-users me-1"></i> Workers: {{ division.total_workers }}</span>
+                                            <span><i class="fas fa-check-circle me-1"></i> Available: {{ division.available_workers }}</span>
+                                            <span><i class="fas fa-exclamation-triangle me-1"></i> Pending: {{ division.pending_issues }}</span>
+                                            <span><i class="fas fa-calendar-day me-1"></i> Resolved Today: {{ division.resolved_today }}</span>
+                                            <span><i class="fas fa-chart-line me-1"></i> Resolution Rate: {{ division.resolution_rate }}%</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Division Issues -->
+                        <div class="card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="fas fa-list me-2"></i>Recent Division Issues
+                                </div>
+                                <a href="{{ url_for('division_issues') }}" class="btn btn-sm btn-light">View All</a>
+                            </div>
+                            <div class="card-body">
+                                {% if recent_issues %}
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Priority</th>
+                                                <th>Status</th>
+                                                <th>Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for issue in recent_issues %}
+                                            <tr>
+                                                <td>#{{ issue.issue_id }}</td>
+                                                <td>{{ issue.title[:50] }}{% if issue.title|length > 50 %}...{% endif %}</td>
+                                                <td>{{ issue.issue_type|replace('_', ' ')|title }}</td>
+                                                <td>
+                                                    <span class="badge badge-priority-{{ issue.priority }}">
+                                                        {{ issue.priority|title }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-status-{{ issue.status }}">
+                                                        {{ issue.status|title }}
+                                                    </span>
+                                                </td>
+                                                <td>{{ issue.created_at.strftime('%m/%d') }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center mb-0">No recent issues</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="col-lg-4">
+                        <!-- Division Performance -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-chart-line me-2"></i>Division Performance
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group list-group-flush">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Resolution Rate
+                                        <span class="badge bg-success rounded-pill">{{ stats.resolution_rate }}%</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Avg. Resolution Time
+                                        <span class="badge bg-info rounded-pill">{{ stats.avg_resolution_time }} days</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Worker Utilization
+                                        <span class="badge bg-warning rounded-pill">{{ stats.worker_utilization }}%</span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        Available Workers
+                                        <span class="badge bg-primary rounded-pill">{{ stats.available_workers }}/{{ stats.total_workers }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Worker Availability -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <i class="fas fa-users me-2"></i>Worker Availability
+                            </div>
+                            <div class="card-body">
+                                {% if available_workers %}
+                                <div class="list-group list-group-flush">
+                                    {% for worker in available_workers %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <strong>{{ worker.name }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ worker.worker_type }}</small>
+                                        </div>
+                                        <span class="badge bg-success">{{ worker.availability }}</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center mb-0">No available workers</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Recent Security Alerts -->
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-shield-alt me-2"></i>Recent Security Alerts
+                            </div>
+                            <div class="card-body">
+                                {% if security_alerts %}
+                                <div class="activity-feed">
+                                    {% for alert in security_alerts %}
+                                    <div class="log-item security">
+                                        <div class="log-header">
+                                            <span class="log-type">Failed Login</span>
+                                            <span class="log-time">{{ alert.attempted_at.strftime('%H:%M') }}</span>
+                                        </div>
+                                        <div class="log-details">
+                                            {{ alert.email }}<br>
+                                            <small>IP: {{ alert.ip_address }}</small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <p class="text-muted text-center mb-0">No security alerts</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Update current time
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleString();
+        }
+        
+        setInterval(updateCurrentTime, 1000);
+        updateCurrentTime();
+
+        // Animate progress bars for issue types
+        function animateProgressBars() {
+            const issueTypeItems = document.querySelectorAll('.issue-type-item');
+            issueTypeItems.forEach((item, index) => {
+                const percentage = item.getAttribute('data-percentage');
+                const barFill = document.getElementById(`type-bar-${index + 1}`);
+                if (barFill && percentage) {
+                    setTimeout(() => {
+                        barFill.style.width = percentage + '%';
+                    }, index * 200);
+                }
+            });
+        }
+
+        // Add hover effects to cards
+        function initCardHoverEffects() {
+            const cards = document.querySelectorAll('.card, .stat-card, .action-card, .division-card-horizontal');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+        }
+
+        // Auto-refresh dashboard every 2 minutes
+        function setupAutoRefresh() {
+            setInterval(() => {
+                window.location.reload();
+            }, 120000);
+        }
+
+        // Initialize all functionality when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            animateProgressBars();
+            initCardHoverEffects();
+            setupAutoRefresh();
+        });
+    </script>
+</body>
+</html>

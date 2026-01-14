@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MSEDCL Grievance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>MSEDCL Electricity Grievance System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <span class="welcome-text">Welcome, {{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Welcome Notification -->
+    <div id="welcomeNotification" class="notification">
+        <div class="notification-content">
+            <span class="notification-message">Welcome to EGS, {{ user_name }}! 🎉</span>
+            <button class="notification-close" id="closeNotification">×</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Welcome Section -->
+    <section class="dashboard-welcome">
+        <div class="welcome-content">
+            <!-- <h2>Hello, {{ user_name }}! 👋</h2> -->
+            <p>Welcome to your MSEDCL Grievance System Dashboard</p>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="container">
+            <div class="action-buttons">
+               <a href="{{ url_for('raise_issue_page') }}" class="btn btn-primary btn-large raise-issue-card">
+    📝 Raise New Issue
+</a>
+<a href="{{ url_for('track_issues') }}" class="btn btn-secondary btn-large">
+    🔍 Track Existing Issues
+</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Statistics -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <h2 class="section-title">System Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="workersCount">{{ stats.total_workers if stats else 0 }}</span>
+                    <span class="stat-label">Active Workers</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="resolvedCount">{{ stats.resolved_issues if stats else 0 }}</span>
+                    <span class="stat-label">Issues Resolved</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="usersCount">{{ stats.total_users if stats else 0 }}</span>
+                    <span class="stat-label">Registered Users</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="activeIssues">{{ stats.active_issues if stats else 0 }}</span>
+                    <span class="stat-label">Active Issues</span>
+                </div>
+            </div>
+        </div>
+    </section>
+<!-- Main Dashboard Grid -->
+<section class="dashboard-main">
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Left Column -->
+            <div class="dashboard-left">
+                <!-- Live Service Status - Single Division -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🏢 Your Division Status</h3>
+                    </div>
+                    <div class="card-content">
+                        {% if live_status %}
+                            {% for division in live_status %}
+                            <div class="single-division-status">
+                                <div class="division-header">
+                                    <h4>{{ division.division_name }}</h4>
+                                    <div class="status-indicator {% if division.available_workers > 0 %}active{% else %}inactive{% endif %}">
+                                        {% if division.available_workers > 0 %}
+                                        🟢 Operational
+                                        {% else %}
+                                        🔴 Busy
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="division-metrics">
+                                    <div class="metric-item">
+                                        <span class="metric-value">{{ division.available_workers }}/{{ division.total_workers }}</span>
+                                        <span class="metric-label">Available Workers</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">{{ division.pending_issues }}</span>
+                                        <span class="metric-label">Pending Issues</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">{{ division.resolved_issues }}</span>
+                                        <span class="metric-label">Resolved Issues</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-value">
+                                            {% if division.total_issues > 0 %}
+                                                {{ ((division.resolved_issues / division.total_issues) * 100)|round|int }}%
+                                            {% else %}
+                                                0%
+                                            {% endif %}
+                                        </span>
+                                        <span class="metric-label">Success Rate</span>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                        <p class="no-data">No division status data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Recent Activity - MOVED TO LEFT COLUMN -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>📊 Recent Activity</h3>
+                    </div>
+                    <div class="card-content">
+                        {% if recent_activity %}
+                        <div class="activity-feed">
+                            {% for activity in recent_activity %}
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    {% if activity.activity_type == 'issue_raised' %}
+                                    📝
+                                    {% else %}
+                                    ✅
+                                    {% endif %}
+                                </div>
+                                <div class="activity-details">
+                                    <p class="activity-text">
+                                        {% if activity.activity_type == 'issue_raised' %}
+                                        <strong>{{ activity.user_name }}</strong> raised issue: "{{ activity.title }}"
+                                        {% else %}
+                                        Issue "{{ activity.title }}" resolved by <strong>{{ activity.worker_name or 'System' }}</strong>
+                                        {% endif %}
+                                    </p>
+                                    <span class="activity-time">
+                                        {% if activity.timestamp %}
+                                            {{ activity.timestamp.strftime('%Y-%m-%d %H:%M') }}
+                                        {% else %}
+                                            Recently
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="no-data">No recent activity</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="dashboard-right">
+                <!-- Top Divisions - Horizontal Layout -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>🏆 Top Performing Divisions</h3>
+                    </div>
+                    <div class="card-content">
+                        {% if top_divisions %}
+                        <div class="divisions-grid-horizontal">
+                            {% for division in top_divisions %}
+                            <div class="division-card-horizontal">
+                                <h4>{{ division.division_name }}</h4>
+                                <div class="division-stats-horizontal">
+                                    <span>📊 {{ division.total_issues }} Total</span>
+                                    <span>✅ {{ division.resolved_issues }} Resolved</span>
+                                    <span>🎯 {{ division.resolution_rate }}% Rate</span>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p class="no-data">No division data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 MSEDCL Electricity Grievance System. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

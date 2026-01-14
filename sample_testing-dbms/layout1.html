@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSEDCL - Electricity Grievance System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: #d32f2f;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            height: 50px;
+            width: auto;
+        }
+        
+        .brand-name {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        
+        .nav-links a:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .hero {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            color: #d32f2f;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #d32f2f;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #d32f2f;
+            border: 2px solid #d32f2f;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            border-top: 4px solid #d32f2f;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            color: #d32f2f;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card p {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .footer {
+            background: #333;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <div class="logo-section">
+                <img src="C:\Users\divya\Desktop\sample_testing-dbms\static\logo.png" alt="MSEDCL Logo" class="logo">
+                <div class="brand-name">MSEDCL Grievance System</div>
+            </div>
+            <div class="nav-links">
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('signup') }}">Sign Up</a>
+                <a href="#about">About</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1>Electricity Issues? We're Here to Help</h1>
+        <p>Report and track your electricity grievances quickly and efficiently with MSEDCL's dedicated grievance resolution system.</p>
+        
+        <div class="cta-buttons">
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Report an Issue</a>
+            <a href="{{ url_for('signup') }}" class="btn btn-secondary">Track Complaint</a>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Quick Resolution</h3>
+            <p>Get your electricity issues resolved quickly by our dedicated team of technicians and engineers.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">📱</div>
+            <h3>Real-time Tracking</h3>
+            <p>Track your complaint status in real-time from reporting to resolution.</p>
+        </div>
+        
+        <div class="feature-card">
+            <div class="feature-icon">🔧</div>
+            <h3>Expert Technicians</h3>
+            <p>Our certified technicians are available 24/7 to handle any electrical emergencies.</p>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <p>&copy; 2024 MSEDCL - Maharashtra State Electricity Distribution Co. Ltd. All rights reserved.</p>
+    </footer>
+</body>
+</html>

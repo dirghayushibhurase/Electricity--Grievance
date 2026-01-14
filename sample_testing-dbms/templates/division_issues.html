@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issues Management - MSEDCL Division</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+            --msedcl-blue: #1976d2;
+            --msedcl-green: #388e3c;
+            --msedcl-orange: #f57c00;
+            --msedcl-purple: #7b1fa2;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .main-content {
+            padding: 20px;
+            background: #f8f9fa;
+            min-height: calc(100vh - 76px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .btn-msedcl {
+            background: var(--msedcl-red);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-msedcl:hover {
+            background: var(--msedcl-dark);
+            color: white;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .filter-group {
+            margin-bottom: 0;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        /* Table Styles */
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+            background-color: #f8f9fa;
+        }
+        
+        .table-responsive {
+            border-radius: 8px;
+        }
+        
+        /* Badge Styles */
+        .badge-priority-low { background-color: #198754; }
+        .badge-priority-medium { background-color: #fd7e14; }
+        .badge-priority-high { background-color: #dc3545; }
+        .badge-priority-critical { background-color: #6f42c1; }
+        
+        .badge-status-pending { background-color: #6c757d; }
+        .badge-status-resolved { background-color: #198754; }
+        
+        .issue-type-badge {
+            background-color: #e9ecef;
+            color: #495057;
+        }
+        
+        /* Worker Skills Display */
+        .worker-skills-display {
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+            min-height: 46px;
+        }
+        
+        /* Priority Select */
+        .priority-select {
+            min-width: 120px;
+        }
+        
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1055;
+            min-width: 300px;
+        }
+        
+        /* Details Modal Styles */
+        .issue-detail-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .issue-detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .detail-value {
+            color: #6c757d;
+        }
+        
+        .assignment-timeline {
+            border-left: 3px solid var(--msedcl-blue);
+            padding-left: 1rem;
+            margin-left: 0.5rem;
+        }
+        
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.3rem;
+            top: 0.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--msedcl-blue);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('division_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Division Head Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }} | {{ division_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('division_issues') }}">
+                                <i class="fas fa-exclamation-circle"></i> Issues Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_workers') }}">
+                                <i class="fas fa-users"></i> Workers Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_logs') }}">
+                                <i class="fas fa-clipboard-list"></i> System Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile & Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-exclamation-circle me-2 text-danger"></i>Issues Management
+                    </h2>
+                    <div class="text-muted">
+                        Total Issues: <strong>{{ total_issues }}</strong>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Priority</label>
+                            <select class="form-select" id="priorityFilter">
+                                <option value="">All Priorities</option>
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Issue Type</label>
+                            <select class="form-select" id="typeFilter">
+                                <option value="">All Types</option>
+                                <option value="power_outage">Power Outage</option>
+                                <option value="voltage_fluctuation">Voltage Fluctuation</option>
+                                <option value="meter_problem">Meter Problem</option>
+                                <option value="billing_dispute">Billing Dispute</option>
+                                <option value="safety_hazard">Safety Hazard</option>
+                                <option value="equipment_damage">Equipment Damage</option>
+                                <option value="street_light_fault">Street Light Fault</option>
+                                <option value="transformer_issue">Transformer Issue</option>
+                                <option value="wire_fault">Wire Fault</option>
+                                <option value="electric_shock">Electric Shock</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="export-buttons">
+                            <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                                <i class="fas fa-times me-1"></i> Clear
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="exportToCSV('issuesTable', 'division_issues.csv')">
+                                <i class="fas fa-download me-1"></i> Export
+                            </button>
+                            <button class="btn btn-msedcl" onclick="applyFilters()">
+                                <i class="fas fa-filter me-1"></i> Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Issues Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-list me-2"></i>Division Issues
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-light" onclick="refreshTable()">
+                                <i class="fas fa-sync-alt me-1"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="issuesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Issue ID</th>
+                                        <th>Title</th>
+                                        <th>User</th>
+                                        <th>Type</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Created</th>
+                                        <th>Assigned Worker</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for issue in issues %}
+                                    <tr data-issue-id="{{ issue.issue_id }}">
+                                        <td>#{{ issue.issue_id }}</td>
+                                        <td>
+                                            <div class="fw-bold">{{ issue.title }}</div>
+                                            <small class="text-muted">{{ issue.description[:100] }}{% if issue.description|length > 100 %}...{% endif %}</small>
+                                        </td>
+                                        <td>{{ issue.user_name }}</td>
+                                        <td>
+                                            <span class="badge issue-type-badge">
+                                                {{ issue.issue_type|replace('_', ' ')|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <select class="form-select form-select-sm priority-select" 
+                                                        data-issue-id="{{ issue.issue_id }}"
+                                                        onchange="updateIssuePriority('{{ issue.issue_id }}', this.value)">
+                                                    <option value="low" {% if issue.priority == 'low' %}selected{% endif %}>Low</option>
+                                                    <option value="medium" {% if issue.priority == 'medium' %}selected{% endif %}>Medium</option>
+                                                    <option value="high" {% if issue.priority == 'high' %}selected{% endif %}>High</option>
+                                                    <option value="critical" {% if issue.priority == 'critical' %}selected{% endif %}>Critical</option>
+                                                </select>
+                                                <button class="btn btn-sm btn-outline-success" onclick="savePriority('{{ issue.issue_id }}')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-status-{{ issue.status }}">
+                                                {{ issue.status|replace('_', ' ')|title }}
+                                            </span>
+                                        </td>
+                                        <td>{{ issue.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            {% if issue.worker_name %}
+                                            <span class="fw-bold">{{ issue.worker_name }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ issue.worker_status|title }}</small>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-outline-primary assign-worker-btn" 
+                                                    data-issue-id="{{ issue.issue_id }}"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#assignWorkerModal">
+                                                Assign Worker
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-info view-details-btn" 
+                                                        data-issue-id="{{ issue.issue_id }}"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#issueDetailsModal">
+                                                    <i class="fas fa-info-circle"></i> Details
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assign Worker Modal -->
+    <div class="modal fade" id="assignWorkerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Assign Worker to Issue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="assignWorkerForm">
+                        <input type="hidden" id="assign_issue_id" name="issue_id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Select Worker</label>
+                                    <select class="form-select" id="worker_select" name="worker_id" required>
+                                        <option value="">Choose a worker...</option>
+                                        {% for worker in available_workers %}
+                                        <option value="{{ worker.worker_id }}" 
+                                                data-skills="{{ worker.skill_sets }}"
+                                                data-type="{{ worker.worker_type }}">
+                                            {{ worker.name }} ({{ worker.worker_type }}) - {{ worker.availability }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Worker Skills</label>
+                                    <div id="workerSkills" class="worker-skills-display">
+                                        Select a worker to view skills...
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Assignment Notes</label>
+                                    <textarea class="form-control" name="worker_notes" rows="4" placeholder="Add any specific instructions or notes for the worker..."></textarea>
+                                </div>
+                                <div class="alert alert-info">
+                                    <small>
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        The selected worker will be marked as "On Task" after assignment.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-msedcl" onclick="assignWorkerToIssue()">Assign Worker</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Details Modal -->
+    <div class="modal fade" id="issueDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Issue Details - #<span id="detailIssueId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="issueDetailsContent">
+                        <!-- Details will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    let currentIssueId = null;
+
+    // Set issue ID when assign worker button is clicked
+    document.querySelectorAll('.assign-worker-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            currentIssueId = this.getAttribute('data-issue-id');
+            document.getElementById('assign_issue_id').value = currentIssueId;
+        });
+    });
+
+    // Show worker skills when worker is selected
+    document.getElementById('worker_select').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const skills = selectedOption.getAttribute('data-skills') || 'No skills specified';
+        document.getElementById('workerSkills').textContent = skills;
+    });
+
+    // Assign worker to issue
+  // Assign worker to issue
+function assignWorkerToIssue() {
+    const formData = new FormData(document.getElementById('assignWorkerForm'));
+    
+    fetch('/api/division/assign-worker', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('Worker assigned successfully!', 'success');
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('assignWorkerModal'));
+            modal.hide();
+            // Refresh the page after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification('Error: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showNotification('Error: ' + error, 'error');
+    });
+}
+
+    // Update issue priority
+    function updateIssuePriority(issueId, priority) {
+        // This will be saved when user clicks the save button
+        document.querySelector(`[data-issue-id="${issueId}"]`).setAttribute('data-pending-priority', priority);
+    }
+
+    // Save priority to database
+    function savePriority(issueId) {
+        const priority = document.querySelector(`[data-issue-id="${issueId}"]`).getAttribute('data-pending-priority');
+        
+        if (!priority) {
+            showNotification('Please select a priority first', 'warning');
+            return;
+        }
+
+        fetch('/api/division/update-issue-priority', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'issue_id=' + issueId + '&priority=' + priority
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification('Priority updated successfully', 'success');
+                // Remove pending priority flag
+                document.querySelector(`[data-issue-id="${issueId}"]`).removeAttribute('data-pending-priority');
+            } else {
+                showNotification('Error updating priority: ' + data.error, 'error');
+            }
+        });
+    }
+
+    // Load issue details
+    document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const issueId = this.getAttribute('data-issue-id');
+            loadIssueDetails(issueId);
+        });
+    });
+
+    function loadIssueDetails(issueId) {
+        fetch(`/api/division/issue-details/${issueId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayIssueDetails(data.data);
+                } else {
+                    document.getElementById('issueDetailsContent').innerHTML = 
+                        '<div class="alert alert-danger">Error loading issue details: ' + data.error + '</div>';
+                }
+            });
+    }
+
+    function displayIssueDetails(issue) {
+        document.getElementById('detailIssueId').textContent = issue.issue_id;
+        
+        let detailsHtml = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="border-bottom pb-2">Issue Information</h6>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Title</div>
+                        <div class="detail-value">${escapeHtml(issue.title)}</div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Description</div>
+                        <div class="detail-value">${escapeHtml(issue.description || 'No description')}</div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Type</div>
+                        <div class="detail-value">${escapeHtml(issue.issue_type.replace('_', ' ').toUpperCase())}</div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Priority</div>
+                        <div class="detail-value"><span class="badge badge-priority-${issue.priority}">${escapeHtml(issue.priority.toUpperCase())}</span></div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value"><span class="badge badge-status-${issue.status}">${escapeHtml(issue.status.toUpperCase())}</span></div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Created Date</div>
+                        <div class="detail-value">${new Date(issue.created_at).toLocaleString()}</div>
+                    </div>
+                    ${issue.resolved_at ? `
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Resolved Date</div>
+                        <div class="detail-value">${new Date(issue.resolved_at).toLocaleString()}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <div class="col-md-6">
+                    <h6 class="border-bottom pb-2">User Information</h6>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">User Name</div>
+                        <div class="detail-value">${escapeHtml(issue.user_name)}</div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">${escapeHtml(issue.user_phone)}</div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Email</div>
+                        <div class="detail-value">${escapeHtml(issue.user_email)}</div>
+                    </div>
+                    <div class="issue-detail-item">
+                        <div class="detail-label">Address</div>
+                        <div class="detail-value">${escapeHtml(issue.address_line1)}${issue.address_line2 ? ', ' + escapeHtml(issue.address_line2) : ''}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        if (issue.worker_name) {
+            detailsHtml += `
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <h6 class="border-bottom pb-2">Assignment Information</h6>
+                        <div class="assignment-timeline">
+                            <div class="timeline-item">
+                                <div class="detail-label">Assigned Worker</div>
+                                <div class="detail-value">${escapeHtml(issue.worker_name)} (${escapeHtml(issue.worker_type)})</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="detail-label">Worker Status</div>
+                                <div class="detail-value">${escapeHtml(issue.worker_status.replace('_', ' ').toUpperCase())}</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="detail-label">Assigned By</div>
+                                <div class="detail-value">${escapeHtml(issue.assigned_by_name || 'System')}</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="detail-label">Assigned Date</div>
+                                <div class="detail-value">${new Date(issue.assigned_at).toLocaleString()}</div>
+                            </div>
+                            ${issue.worker_notes ? `
+                            <div class="timeline-item">
+                                <div class="detail-label">Assignment Notes</div>
+                                <div class="detail-value">${escapeHtml(issue.worker_notes)}</div>
+                            </div>
+                            ` : ''}
+                            ${issue.completed_at ? `
+                            <div class="timeline-item">
+                                <div class="detail-label">Completed Date</div>
+                                <div class="detail-value">${new Date(issue.completed_at).toLocaleString()}</div>
+                            </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        document.getElementById('issueDetailsContent').innerHTML = detailsHtml;
+    }
+
+    function escapeHtml(unsafe) {
+        return unsafe
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    // Apply filters
+    function applyFilters() {
+        const status = document.getElementById('statusFilter').value;
+        const priority = document.getElementById('priorityFilter').value;
+        const type = document.getElementById('typeFilter').value;
+        
+        let url = '?';
+        if (status) url += 'status=' + status + '&';
+        if (priority) url += 'priority=' + priority + '&';
+        if (type) url += 'type=' + type + '&';
+        
+        window.location.href = url.slice(0, -1); // Remove trailing & or ?
+    }
+
+    // Clear filters
+    function clearFilters() {
+        window.location.href = window.location.pathname;
+    }
+
+    // Export to CSV
+    function exportToCSV(tableId, filename) {
+        const table = document.getElementById(tableId);
+        const rows = table.querySelectorAll('tr');
+        let csv = [];
+        
+        for (let i = 0; i < rows.length; i++) {
+            const row = [];
+            const cols = rows[i].querySelectorAll('td, th');
+            
+            for (let j = 0; j < cols.length; j++) {
+                let text = cols[j].innerText;
+                text = text.replace(/Assign Worker|View|Edit|Details/g, '');
+                text = text.replace(/Save/g, '');
+                row.push('"' + text.trim() + '"');
+            }
+            
+            csv.push(row.join(','));
+        }
+        
+        const csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
+        const downloadLink = document.createElement('a');
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = 'none';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    function refreshTable() {
+        window.location.reload();
+    }
+
+    function showNotification(message, type) {
+        // Remove existing notifications
+        document.querySelectorAll('.notification-toast').forEach(toast => toast.remove());
+        
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-' + type + ' alert-dismissible fade show notification-toast';
+        alert.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        document.body.appendChild(alert);
+        
+        setTimeout(function() {
+            if (alert.parentNode) {
+                alert.parentNode.removeChild(alert);
+            }
+        }, 3000);
+    }
+
+    // Initialize filters from URL parameters
+    document.addEventListener('DOMContentLoaded', function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('statusFilter').value = urlParams.get('status') || '';
+        document.getElementById('priorityFilter').value = urlParams.get('priority') || '';
+        document.getElementById('typeFilter').value = urlParams.get('type') || '';
+    });
+</script>
+</body>
+</html>

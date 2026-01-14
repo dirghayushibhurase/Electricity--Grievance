@@ -1,0 +1,624 @@
+:root {
+    --msedcl-red: #d32f2f;
+    --msedcl-dark: #b71c1c;
+    --msedcl-light: #f5f5f5;
+}
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.sidebar {
+    background: white;
+    min-height: calc(100vh - 76px);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    color: #333;
+    padding: 12px 20px;
+    margin: 5px 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: var(--msedcl-red);
+    color: white;
+}
+
+.sidebar .nav-link i {
+    width: 20px;
+    margin-right: 10px;
+}
+
+.main-content {
+    padding: 20px;
+    background: #f8f9fa;
+    min-height: calc(100vh - 76px);
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 15px 20px;
+    font-weight: 600;
+}
+
+.btn-msedcl {
+    background: var(--msedcl-red);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-msedcl:hover {
+    background: var(--msedcl-dark);
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Equipment Cards */
+.equipment-card {
+    border-left: 4px solid var(--msedcl-red);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.equipment-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.equipment-details {
+    margin-bottom: 1rem;
+}
+
+.equipment-details small {
+    line-height: 1.6;
+}
+
+/* Filter Styles */
+.filter-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 2rem;
+}
+
+.filter-row {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: end;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+/* Badge Styles */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.4em 0.6em;
+}
+
+.bg-success { background-color: #28a745 !important; }
+.bg-danger { background-color: #dc3545 !important; }
+.bg-warning { background-color: #ffc107 !important; color: #000 !important; }
+.bg-info { background-color: #17a2b8 !important; }
+.bg-primary { background-color: #007bff !important; }
+.bg-secondary { background-color: #6c757d !important; }
+
+/* Equipment History Table */
+.equipment-history-requested {
+    background-color: #fff3cd;
+}
+
+.equipment-history-issued {
+    background-color: #d4edda;
+}
+
+.equipment-history-rejected {
+    background-color: #f8d7da;
+}
+
+.equipment-history-returned {
+    background-color: #d1ecf1;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,0.075);
+}
+
+/* Button Styles */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.btn-outline-secondary {
+    border-color: #6c757d;
+    color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Search and Filter Inputs */
+.form-control, .form-select {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--msedcl-red);
+    box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
+}
+
+/* Modal Styles */
+.modal-header {
+    background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-title {
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        min-width: 100%;
+    }
+    
+    .main-content {
+        padding: 15px;
+    }
+    
+    .card-header {
+        padding: 12px 15px;
+    }
+    
+    .equipment-card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animation for equipment items */
+.equipment-item {
+    transition: all 0.3s ease;
+}
+
+.equipment-item[style*="display: none"] {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.equipment-item[style*="display: block"] {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Status indicators */
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.status-available {
+    background-color: #28a745;
+}
+
+.status-assigned {
+    background-color: #ffc107;
+}
+
+.status-pending {
+    background-color: #17a2b8;
+}
+
+.status-rejected {
+    background-color: #dc3545;
+}
+
+/* Equipment type icons */
+.equipment-icon {
+    font-size: 1.5rem;
+    margin-right: 10px;
+    color: var(--msedcl-red);
+}
+
+/* Cost indicators */
+.cost-low {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.cost-medium {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.cost-high {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Empty state styling */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+/* Card action buttons */
+.card-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* Equipment details highlight */
+.equipment-highlight {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    border-left: 4px solid #ffc107;
+}
+
+/* Filter active state */
+.filter-active {
+    background-color: var(--msedcl-red) !important;
+    color: white !important;
+    border-color: var(--msedcl-red) !important;
+}
+
+/* Custom scrollbar for tables */
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: var(--msedcl-red);
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: var(--msedcl-dark);
+}
+
+/* Hover effects for interactive elements */
+.interactive:hover {
+    cursor: pointer;
+    background-color: #f8f9fa;
+}
+
+/* Text utilities */
+.text-msedcl {
+    color: var(--msedcl-red);
+}
+
+.bg-msedcl-light {
+    background-color: var(--msedcl-light);
+}
+
+/* Badge variants */
+.badge-outline-success {
+    background-color: transparent;
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+
+.badge-outline-warning {
+    background-color: transparent;
+    border: 1px solid #ffc107;
+    color: #ffc107;
+}
+
+.badge-outline-danger {
+    background-color: transparent;
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+
+/* Equipment status badges */
+.equipment-status-badge {
+    font-size: 0.7rem;
+    padding: 0.3em 0.5em;
+    margin-right: 0.5rem;
+}
+
+/* Modal backdrop customization */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-backdrop.show {
+    opacity: 0.6;
+}
+
+/* Form validation styles */
+.is-valid {
+    border-color: #28a745 !important;
+}
+
+.is-invalid {
+    border-color: #dc3545 !important;
+}
+
+.valid-feedback,
+.invalid-feedback {
+    display: block;
+    font-size: 0.875rem;
+}
+
+/* Animation for modal appearance */
+.modal.fade .modal-dialog {
+    transform: translate(0, -50px);
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: translate(0, 0);
+}
+
+/* Equipment card header */
+.equipment-card-header {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem 1.25rem;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Equipment image placeholder */
+.equipment-image-placeholder {
+    width: 100%;
+    height: 120px;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+/* Equipment specs grid */
+.equipment-specs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+}
+
+.spec-item {
+    text-align: center;
+    padding: 0.5rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.spec-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+}
+
+.spec-value {
+    font-weight: 600;
+    color: #333;
+}
+
+/* Print styles */
+@media print {
+    .navbar, .sidebar, .btn, .filter-section {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+
+/* Table Container with Scroll */
+.table-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+
+.table-container .table {
+    margin-bottom: 0;
+}
+
+.table-container .table thead th {
+    position: sticky;
+    top: 0;
+    background: #343a40;
+    z-index: 10;
+}
+
+/* Cost indicator colors */
+.cost-low {
+    color: #28a745;
+    font-weight: 600;
+}
+
+.cost-medium {
+    color: #ffc107;
+    font-weight: 600;
+}
+
+.cost-high {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+/* Table row hover effects */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.075);
+    transform: scale(1.01);
+    transition: all 0.2s ease;
+}
+
+/* Equipment history row colors */
+.equipment-history-requested {
+    background-color: #fff3cd !important;
+}
+
+.equipment-history-issued {
+    background-color: #d4edda !important;
+}
+
+.equipment-history-rejected {
+    background-color: #f8d7da !important;
+}
+
+.equipment-history-returned {
+    background-color: #d1ecf1 !important;
+}
+
+/* Filter section styling */
+.filter-section {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+/* Count display */
+.count-display {
+    font-weight: 600;
+    color: var(--msedcl-red);
+}
+
+/* Responsive table adjustments */
+@media (max-width: 768px) {
+    .table-container {
+        max-height: 300px;
+        font-size: 0.875rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem;
+    }
+}
+
+/* Custom scrollbar for table container */
+.table-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: var(--msedcl-red);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--msedcl-dark);
+}
+
+/* Striped table with better contrast */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+/* Button states for request equipment */
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Filter input focus states */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--msedcl-red);
+    box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
+}
+
+/* Badge improvements */
+.badge {
+    font-size: 0.75em;
+    padding: 0.35em 0.65em;
+}
+
+/* Table header improvements */
+.table-dark {
+    background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+}
+
+.table-dark th {
+    border-bottom: none;
+    font-weight: 600;
+}

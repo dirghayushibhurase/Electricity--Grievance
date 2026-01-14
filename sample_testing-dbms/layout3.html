@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSEDCL - Grievance Portal</title>
+    <style>
+        :root {
+            --primary-red: #d32f2f;
+            --dark-red: #b71c1c;
+            --light-red: #ff6659;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --dark-gray: #333333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: var(--white);
+            color: var(--dark-gray);
+            line-height: 1.6;
+        }
+        
+        .top-bar {
+            background: var(--primary-red);
+            color: var(--white);
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .top-bar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2rem;
+        }
+        
+        .emergency-contact {
+            font-weight: 600;
+        }
+        
+        .main-header {
+            background: var(--white);
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .logo {
+            height: 40px;
+            width: auto;
+        }
+        
+        .brand-text h1 {
+            font-size: 1.5rem;
+            color: var(--primary-red);
+            font-weight: 700;
+        }
+        
+        .brand-text .tagline {
+            font-size: 0.8rem;
+            color: var(--dark-gray);
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            padding: 0.7rem 1.5rem;
+            border: 2px solid var(--primary-red);
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn.primary {
+            background: var(--primary-red);
+            color: var(--white);
+        }
+        
+        .action-btn.secondary {
+            background: var(--white);
+            color: var(--primary-red);
+        }
+        
+        .action-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+        }
+        
+        .welcome-section {
+            background: linear-gradient(135deg, var(--light-gray) 0%, var(--white) 100%);
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        
+        .welcome-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.1rem;
+            color: var(--dark-gray);
+            margin-bottom: 2rem;
+        }
+        
+        .service-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .service-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+            border-left: 4px solid var(--primary-red);
+        }
+        
+        .service-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .service-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--light-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.5rem;
+            color: var(--white);
+        }
+        
+        .service-card h3 {
+            color: var(--primary-red);
+            margin-bottom: 1rem;
+        }
+        
+        .service-card p {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+        }
+        
+        .footer {
+            background: var(--dark-gray);
+            color: var(--white);
+            padding: 3rem 2rem 2rem;
+            margin-top: 4rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .footer-section h4 {
+            color: var(--light-red);
+            margin-bottom: 1rem;
+        }
+        
+        .footer-section a {
+            color: var(--white);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div class="emergency-contact">Emergency: Dial 1912 | Customer Care: 1800-102-3435</div>
+            <div class="quick-links">
+                <a href="#" style="color: white; margin-left: 1rem; text-decoration: none;">Bill Payment</a>
+                <a href="#" style="color: white; margin-left: 1rem; text-decoration: none;">Outage Map</a>
+            </div>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-content">
+            <div class="brand">
+                <img src="/static/logo.png" alt="MSEDCL Logo" class="logo"> 
+                <div class="brand-text">
+                    <h1>MSEDCL Grievance Portal</h1>
+                    <div class="tagline">Your Voice, Our Priority</div>
+                </div>
+            </div>
+            <div class="quick-actions">
+                <a href="{{ url_for('login') }}" class="action-btn secondary">Login</a>
+                <a href="{{ url_for('signup') }}" class="action-btn primary">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="welcome-section">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Quick & Easy Issue Resolution</h1>
+            <p class="welcome-subtitle">Report electricity issues, track resolution progress, and get timely updates - all in one place.</p>
+        </div>
+    </section>
+
+    <div class="service-cards">
+        <div class="service-card">
+            <div class="service-icon">⚡</div>
+            <h3>Power Outage</h3>
+            <p>Report complete or partial power cuts in your area for immediate attention.</p>
+        </div>
+        
+        <div class="service-card">
+            <div class="service-icon">📊</div>
+            <h3>Voltage Issues</h3>
+            <p>High/Low voltage problems affecting your appliances and daily life.</p>
+        </div>
+        
+        <div class="service-card">
+            <div class="service-icon">🧾</div>
+            <h3>Billing Problems</h3>
+            <p>Dispute incorrect bills, missing bills, or billing calculation errors.</p>
+        </div>
+        
+        <div class="service-card">
+            <div class="service-icon">🔧</div>
+            <h3>Equipment Fault</h3>
+            <p>Report faulty meters, transformers, or other electrical equipment.</p>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('signup') }}">Register</a>
+                <a href="#">Track Complaint</a>
+                <a href="#">Outage Map</a>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Services</h4>
+                <a href="#">New Connection</a>
+                <a href="#">Bill Payment</a>
+                <a href="#">Complaint Status</a>
+                <a href="#">Energy Conservation</a>
+            </div>
+            
+            <div class="footer-section">
+                <h4>Contact</h4>
+                <p>Emergency: 1912</p>
+                <p>Customer Care: 1800-102-3435</p>
+                <p>Email: complaints@msedcl.com</p>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2024 MSEDCL. All rights reserved. | Maharashtra State Electricity Distribution Company Limited</p>
+        </div>
+    </footer>
+</body>
+</html>

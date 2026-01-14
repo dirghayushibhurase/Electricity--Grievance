@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Management - MSEDCL Grievance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+            --msedcl-blue: #1976d2;
+            --msedcl-green: #388e3c;
+            --msedcl-orange: #f57c00;
+            --msedcl-purple: #7b1fa2;
+        }
+        
+        .badge-available { 
+            background-color: var(--msedcl-green); 
+            color: white;
+        }
+        .badge-assigned { 
+            background-color: var(--msedcl-orange); 
+            color: white;
+        }
+        .badge-pending { 
+            background-color: var(--msedcl-blue); 
+            color: white;
+        }
+        
+        .table-hover tbody tr:hover {
+            background-color: rgba(0,0,0,0.02);
+        }
+        
+        .action-buttons .btn {
+            margin: 2px;
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .main-content {
+            padding: 20px;
+            background: #f8f9fa;
+            min-height: calc(100vh - 76px);
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+        }
+        
+        .stats-card {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--msedcl-red);
+            transition: transform 0.2s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .stats-card.all-divisions {
+            border-left: 4px solid var(--msedcl-blue);
+        }
+        
+        .stats-card.available {
+            border-left: 4px solid var(--msedcl-green);
+        }
+        
+        .stats-card.assigned {
+            border-left: 4px solid var(--msedcl-orange);
+        }
+        
+        .request-highlight {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--msedcl-blue);
+        }
+        
+        .filter-section {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+        
+        .scrollable-table {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        
+        .scrollable-table table {
+            margin-bottom: 0;
+        }
+        
+        .scrollable-table thead th {
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+            color: #333;
+            z-index: 10;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .card-header-red {
+            background: var(--msedcl-red);
+            color: white;
+        }
+        
+        .division-badge {
+            background: var(--msedcl-purple);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+        
+        .table th {
+            background: #f8f9fa;
+            color: #333;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('division_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Equipment Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }} | {{ division_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_issues') }}">
+                                <i class="fas fa-exclamation-circle"></i> Issues Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_workers') }}">
+                                <i class="fas fa-users"></i> Workers Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_logs') }}">
+                                <i class="fas fa-clipboard-list"></i> System Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('division_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile & Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-tools me-2 text-danger"></i>Equipment Management
+                    </h2>
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#addEquipmentModal">
+                        <i class="fas fa-plus me-1"></i> Add New Equipment
+                    </button>
+                </div>
+
+                <!-- Current Division Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card">
+                            <h4 class="text-primary">{{ total_equipment }}</h4>
+                            <p class="text-muted mb-0">Current Division Equipment</p>
+                            <small class="text-muted">{{ division_name }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card available">
+                            <h4 class="text-success">{{ available_equipment }}</h4>
+                            <p class="text-muted mb-0">Available in Current Division</p>
+                            <small class="text-muted">{{ division_name }}</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card assigned">
+                            <h4 class="text-warning">{{ assigned_equipment }}</h4>
+                            <p class="text-muted mb-0">Assigned in Current Division</p>
+                            <small class="text-muted">{{ division_name }}</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Divisions Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="stats-card all-divisions">
+                            <h4 class="text-primary">{{ total_stats.total_equipment_all if total_stats else 0 }}</h4>
+                            <p class="text-muted mb-0">Total Equipment (All Divisions)</p>
+                            <small class="text-muted">Across all divisions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card all-divisions available">
+                            <h4 class="text-success">{{ total_stats.available_equipment_all if total_stats else 0 }}</h4>
+                            <p class="text-muted mb-0">Available (All Divisions)</p>
+                            <small class="text-muted">Across all divisions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-card all-divisions assigned">
+                            <h4 class="text-warning">{{ total_stats.assigned_equipment_all if total_stats else 0 }}</h4>
+                            <p class="text-muted mb-0">Assigned (All Divisions)</p>
+                            <small class="text-muted">Across all divisions</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equipment Requests Section -->
+                <div class="card mb-4">
+                    <div class="card-header card-header-red">
+                        <i class="fas fa-clock me-2"></i>Pending Equipment Requests
+                        <span class="badge bg-light text-dark ms-2">{{ equipment_requests|length }}</span>
+                    </div>
+                    <div class="card-body">
+                        {% if equipment_requests %}
+                        <!-- Requests Filters -->
+                        <div class="filter-section">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Search Equipment</label>
+                                    <input type="text" class="form-control" id="requestsEquipmentSearch" placeholder="Search equipment...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Worker Type</label>
+                                    <select class="form-select" id="requestsWorkerTypeFilter">
+                                        <option value="">All Types</option>
+                                        <option value="Technician">Technician</option>
+                                        <option value="Inspector">Inspector</option>
+                                        <option value="Supervisor">Supervisor</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Purpose</label>
+                                    <input type="text" class="form-control" id="requestsPurposeSearch" placeholder="Search purpose...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Return Date</label>
+                                    <input type="date" class="form-control" id="requestsReturnDateFilter">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Actions</label>
+                                    <div class="filter-buttons">
+                                        <button class="btn btn-primary btn-sm" id="applyRequestsFilter">
+                                            <i class="fas fa-filter"></i> Apply Filters
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="clearRequestsFilters">
+                                            <i class="fas fa-times"></i> Clear
+                                        </button>
+                                        <span class="ms-2 text-muted">
+                                            Showing: <span id="requestsVisibleCount">{{ equipment_requests|length }}</span>/{{ equipment_requests|length }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="scrollable-table">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Equipment</th>
+                                        <th>Worker</th>
+                                        <th>Worker Type</th>
+                                        <th>Purpose</th>
+                                        <th>Expected Return</th>
+                                        <th>Request Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestsTableBody">
+                                    {% for request in equipment_requests %}
+                                    <tr class="request-highlight" 
+                                        data-equipment="{{ request.name_of_equipment|lower }}"
+                                        data-worker="{{ request.worker_name|lower }}"
+                                        data-worker-type="{{ request.worker_type|lower if request.worker_type else '' }}"
+                                        data-purpose="{{ request.purpose|lower }}"
+                                        data-return-date="{{ request.expected_return_date }}">
+                                        <td>
+                                            <strong>{{ request.name_of_equipment }}</strong>
+                                            <br><small class="text-muted">{{ request.serial_no }}</small>
+                                            <br><small class="division-badge">{{ request.division_name }}</small>
+                                        </td>
+                                        <td>{{ request.worker_name }}</td>
+                                        <td>
+                                            {% if request.worker_type %}
+                                                <span class="badge {% if request.worker_type == 'Technician' %}bg-primary{% elif request.worker_type == 'Inspector' %}bg-info{% else %}bg-warning{% endif %}">
+                                                    {{ request.worker_type }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">Not specified</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ request.purpose }}</td>
+                                        <td>{{ request.expected_return_date }}</td>
+                                        <td>{{ request.action_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <button class="btn btn-success btn-sm approve-request-btn" data-history-id="{{ request.history_id }}">
+                                                    <i class="fas fa-check"></i> Approve
+                                                </button>
+                                                <button class="btn btn-danger btn-sm reject-request-btn" data-history-id="{{ request.history_id }}">
+                                                    <i class="fas fa-times"></i> Reject
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <p class="text-muted text-center mb-0">No pending equipment requests</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- All Equipment Section -->
+                <div class="card mb-4">
+                    <div class="card-header card-header-red">
+                        <i class="fas fa-list me-2"></i>All Equipment (All Divisions)
+                    </div>
+                    <div class="card-body">
+                        <!-- Equipment Filters -->
+                        <div class="filter-section">
+                            <div class="row g-3">
+                                <div class="col-md-2">
+                                    <label class="form-label">Search Equipment</label>
+                                    <input type="text" class="form-control" id="equipmentSearch" placeholder="Search equipment...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Serial No</label>
+                                    <input type="text" class="form-control" id="serialSearch" placeholder="Search serial...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Model</label>
+                                    <input type="text" class="form-control" id="modelSearch" placeholder="Search model...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Division</label>
+                                    <select class="form-select" id="divisionFilter">
+                                        <option value="">All Divisions</option>
+                                        {% for division in all_divisions_summary %}
+                                        <option value="{{ division.division_name }}">{{ division.division_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Status</label>
+                                    <select class="form-select" id="statusFilter">
+                                        <option value="">All Status</option>
+                                        <option value="Available">Available</option>
+                                        <option value="Assigned">Assigned</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Cost Range</label>
+                                    <select class="form-select" id="costFilter">
+                                        <option value="">All Costs</option>
+                                        <option value="low">Low (< ₹5,000)</option>
+                                        <option value="medium">Medium (₹5,000-₹10,000)</option>
+                                        <option value="high">High (> ₹10,000)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row g-3 mt-2">
+                                <div class="col-md-2">
+                                    <label class="form-label">Issue Date From</label>
+                                    <input type="date" class="form-control" id="issueDateFrom">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Issue Date To</label>
+                                    <input type="date" class="form-control" id="issueDateTo">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Return Date From</label>
+                                    <input type="date" class="form-control" id="returnDateFrom">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Return Date To</label>
+                                    <input type="date" class="form-control" id="returnDateTo">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label">Actions</label>
+                                    <div class="filter-buttons">
+                                        <button class="btn btn-primary btn-sm" id="applyEquipmentFilter">
+                                            <i class="fas fa-filter"></i> Apply Filters
+                                        </button>
+                                        <button class="btn btn-outline-secondary btn-sm" id="clearEquipmentFilters">
+                                            <i class="fas fa-times"></i> Clear All
+                                        </button>
+                                        <span class="ms-2 text-muted">
+                                            <span id="equipmentVisibleCount">{{ all_equipment|length }}</span>/{{ all_equipment|length }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="scrollable-table">
+                            <table class="table table-hover" id="equipmentTable">
+                                <thead>
+                                    <tr>
+                                        <th>Serial No</th>
+                                        <th>Equipment Name</th>
+                                        <th>Model</th>
+                                        <th>Division</th>
+                                        <th>Cost</th>
+                                        <th>Status</th>
+                                        <th>Assigned To</th>
+                                        <th>Issue Date</th>
+                                        <th>Expected Return</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="equipmentTableBody">
+                                    {% for equipment in all_equipment %}
+                                    <tr data-name="{{ equipment.name_of_equipment|lower }}"
+                                        data-serial="{{ equipment.serial_no|lower }}"
+                                        data-model="{{ equipment.model_no|lower if equipment.model_no else '' }}"
+                                        data-status="{{ equipment.availability_status }}"
+                                        data-cost="{{ equipment.equipment_cost }}"
+                                        data-division="{{ equipment.division_name|lower }}"
+                                        data-issue-date="{{ equipment.issue_date or '' }}"
+                                        data-return-date="{{ equipment.expected_return_date or '' }}">
+                                        <td><strong>{{ equipment.serial_no }}</strong></td>
+                                        <td>{{ equipment.name_of_equipment }}</td>
+                                        <td>{{ equipment.model_no or 'N/A' }}</td>
+                                        <td>
+                                            <span class="division-badge">{{ equipment.division_name }}</span>
+                                        </td>
+                                        <td>₹{{ "%.2f"|format(equipment.equipment_cost) }}</td>
+                                        <td>
+                                            {% if equipment.availability_status == 'Available' %}
+                                            <span class="badge badge-available">Available</span>
+                                            {% else %}
+                                            <span class="badge badge-assigned">Assigned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if equipment.worker_name %}
+                                                {{ equipment.worker_name }}
+                                            {% else %}
+                                                <span class="text-muted">Not assigned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ equipment.issue_date or 'N/A' }}</td>
+                                        <td>{{ equipment.expected_return_date or 'N/A' }}</td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                {% if equipment.availability_status == 'Available' %}
+                                                <button class="btn btn-primary btn-sm issue-equipment-btn" 
+                                                        data-equipment-id="{{ equipment.equipment_id }}"
+                                                        data-equipment-name="{{ equipment.name_of_equipment }}"
+                                                        title="Issue Equipment">
+                                                    <i class="fas fa-share"></i>
+                                                </button>
+                                                {% else %}
+                                                <button class="btn btn-warning btn-sm return-equipment-btn" 
+                                                        data-equipment-id="{{ equipment.equipment_id }}"
+                                                        data-equipment-name="{{ equipment.name_of_equipment }}"
+                                                        title="Return Equipment">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                                {% endif %}
+                                                <button class="btn btn-info btn-sm view-history-btn" 
+                                                        data-equipment-id="{{ equipment.equipment_id }}"
+                                                        title="View History">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- All Divisions Summary Section -->
+                <div class="card">
+                    <div class="card-header card-header-red d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-chart-bar me-2"></i>All Divisions Equipment Summary
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="btn btn-light btn-sm" id="applySummaryFilter">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                            <button class="btn btn-outline-light btn-sm" id="clearSummaryFilters">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-section mb-3">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Search Division</label>
+                                    <input type="text" class="form-control" id="summaryDivisionSearch" placeholder="Search division...">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Min Equipment</label>
+                                    <input type="number" class="form-control" id="minEquipmentFilter" placeholder="Min">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Max Equipment</label>
+                                    <input type="number" class="form-control" id="maxEquipmentFilter" placeholder="Max">
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Approval Rate</label>
+                                    <select class="form-select" id="approvalRateFilter">
+                                        <option value="">All Rates</option>
+                                        <option value="high">High (≥80%)</option>
+                                        <option value="medium">Medium (60-79%)</option>
+                                        <option value="low">Low (<60%)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Sort By</label>
+                                    <select class="form-select" id="summarySortFilter">
+                                        <option value="total">Total Equipment</option>
+                                        <option value="available">Available Equipment</option>
+                                        <option value="assigned">Assigned Equipment</option>
+                                        <option value="value">Total Value</option>
+                                        <option value="approval">Approval Rate</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="scrollable-table">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Division</th>
+                                        <th>Total Equipment</th>
+                                        <th>Available</th>
+                                        <th>Assigned</th>
+                                        <th>Approval Rate</th>
+                                        <th>Total Value</th>
+                                        <th>Avg Cost</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="summaryTableBody">
+                                    {% for division in all_divisions_summary %}
+                                    <tr data-division="{{ division.division_name|lower }}"
+                                        data-total="{{ division.total_equipment }}"
+                                        data-available="{{ division.available_equipment }}"
+                                        data-assigned="{{ division.assigned_equipment }}"
+                                        data-approval="{{ division.approval_rate }}"
+                                        data-value="{{ division.total_equipment_value or 0 }}">
+                                        <td>
+                                            <strong>{{ division.division_name }}</strong>
+                                            {% if division.division_id == session.division_id %}
+                                            <span class="badge bg-primary ms-1">Current</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ division.total_equipment }}</td>
+                                        <td>
+                                            <span class="text-success">{{ division.available_equipment }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="text-warning">{{ division.assigned_equipment }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if division.approval_rate >= 80 %}bg-success{% elif division.approval_rate >= 60 %}bg-warning{% else %}bg-danger{% endif %}">
+                                                {{ division.approval_rate }}%
+                                            </span>
+                                        </td>
+                                        <td>₹{{ "%.2f"|format(division.total_equipment_value or 0) }}</td>
+                                        <td>₹{{ "%.2f"|format(division.avg_equipment_cost or 0) }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Equipment Modal -->
+    <div class="modal fade" id="addEquipmentModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Equipment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addEquipmentForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Serial Number *</label>
+                                    <input type="text" class="form-control" name="serial_no" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Equipment Name *</label>
+                                    <input type="text" class="form-control" name="name_of_equipment" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Model Number</label>
+                                    <input type="text" class="form-control" name="model_no">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Purchase Date *</label>
+                                    <input type="date" class="form-control" name="purchase_date" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Equipment Cost (₹) *</label>
+                                    <input type="number" step="0.01" class="form-control" name="equipment_cost" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Calibration Date</label>
+                                    <input type="date" class="form-control" name="calibration_date">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Division *</label>
+                                    <select class="form-select" name="division_id" required>
+                                        <option value="">Select Division</option>
+                                        {% for division in divisions %}
+                                        <option value="{{ division.division_id }}">{{ division.division_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Remarks</label>
+                                    <textarea class="form-control" name="remarks" rows="2"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="addEquipmentBtn">Add Equipment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Issue Equipment Modal -->
+    <div class="modal fade" id="issueEquipmentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Issue Equipment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="issueEquipmentForm">
+                        <input type="hidden" id="issue_equipment_id" name="equipment_id">
+                        <div class="mb-3">
+                            <label class="form-label">Equipment</label>
+                            <input type="text" class="form-control" id="issue_equipment_name" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Assign to Worker *</label>
+                            <select class="form-select" id="issue_worker_id" name="worker_id" required>
+                                <option value="">Select Worker</option>
+                                {% for worker in available_workers %}
+                                <option value="{{ worker.worker_id }}">{{ worker.name }} ({{ worker.worker_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Expected Return Date *</label>
+                            <input type="date" class="form-control" name="expected_return_date" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Purpose</label>
+                            <textarea class="form-control" name="purpose" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" rows="2"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="confirmIssueBtn">Issue Equipment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment History Modal -->
+    <div class="modal fade" id="historyModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Equipment History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="historyContent">
+                        <!-- History content will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Equipment request handlers
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM loaded - initializing filters');
+        
+        // Equipment management buttons (these are working)
+        document.querySelectorAll('.approve-request-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var historyId = this.getAttribute('data-history-id');
+                handleEquipmentRequest(historyId, 'approve');
+            });
+        });
+
+        document.querySelectorAll('.reject-request-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var historyId = this.getAttribute('data-history-id');
+                handleEquipmentRequest(historyId, 'reject');
+            });
+        });
+
+        document.querySelectorAll('.issue-equipment-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var equipmentId = this.getAttribute('data-equipment-id');
+                var equipmentName = this.getAttribute('data-equipment-name');
+                showIssueEquipmentModal(equipmentId, equipmentName);
+            });
+        });
+
+        document.querySelectorAll('.return-equipment-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var equipmentId = this.getAttribute('data-equipment-id');
+                var equipmentName = this.getAttribute('data-equipment-name');
+                returnEquipment(equipmentId, equipmentName);
+            });
+        });
+
+        document.querySelectorAll('.view-history-btn').forEach(function(button) {
+            button.addEventListener('click', function() {
+                var equipmentId = this.getAttribute('data-equipment-id');
+                viewEquipmentHistory(equipmentId);
+            });
+        });
+
+        document.getElementById('addEquipmentBtn').addEventListener('click', addNewEquipment);
+        document.getElementById('confirmIssueBtn').addEventListener('click', confirmIssueEquipment);
+
+        // FILTER BUTTONS - FIXED WITH PROPER EVENT LISTENERS
+        console.log('Setting up filter buttons...');
+        
+        const applyRequestsBtn = document.getElementById('applyRequestsFilter');
+        const clearRequestsBtn = document.getElementById('clearRequestsFilters');
+        const applyEquipmentBtn = document.getElementById('applyEquipmentFilter');
+        const clearEquipmentBtn = document.getElementById('clearEquipmentFilters');
+        const applySummaryBtn = document.getElementById('applySummaryFilter');
+        const clearSummaryBtn = document.getElementById('clearSummaryFilters');
+
+        if (applyRequestsBtn) {
+            applyRequestsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Apply Requests Filter clicked');
+                filterRequests();
+            });
+        }
+
+        if (clearRequestsBtn) {
+            clearRequestsBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Clear Requests Filters clicked');
+                clearRequestsFilters();
+            });
+        }
+
+        if (applyEquipmentBtn) {
+            applyEquipmentBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Apply Equipment Filter clicked');
+                filterEquipment();
+            });
+        }
+
+        if (clearEquipmentBtn) {
+            clearEquipmentBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Clear Equipment Filters clicked');
+                clearEquipmentFilters();
+            });
+        }
+
+        if (applySummaryBtn) {
+            applySummaryBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Apply Summary Filter clicked');
+                filterSummary();
+            });
+        }
+
+        if (clearSummaryBtn) {
+            clearSummaryBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('Clear Summary Filters clicked');
+                clearSummaryFilters();
+            });
+        }
+
+        // Test if buttons are found
+        console.log('Filter buttons found:', {
+            applyRequests: !!applyRequestsBtn,
+            clearRequests: !!clearRequestsBtn,
+            applyEquipment: !!applyEquipmentBtn,
+            clearEquipment: !!clearEquipmentBtn,
+            applySummary: !!applySummaryBtn,
+            clearSummary: !!clearSummaryBtn
+        });
+
+        // Initialize with default filtering
+        console.log('Initializing filters...');
+        setTimeout(function() {
+            filterRequests();
+            filterEquipment();
+            filterSummary();
+        }, 500);
+    });
+
+    // SIMPLIFIED FILTER FUNCTIONS THAT WILL WORK
+    function filterRequests() {
+        console.log('=== FILTERING REQUESTS ===');
+        const equipmentSearch = document.getElementById('requestsEquipmentSearch').value.toLowerCase();
+        const workerTypeFilter = document.getElementById('requestsWorkerTypeFilter').value.toLowerCase();
+        const purposeSearch = document.getElementById('requestsPurposeSearch').value.toLowerCase();
+        const returnDateFilter = document.getElementById('requestsReturnDateFilter').value;
+        
+        console.log('Filter values:', {
+            equipmentSearch,
+            workerTypeFilter, 
+            purposeSearch,
+            returnDateFilter
+        });
+        
+        let visibleCount = 0;
+        const rows = document.querySelectorAll('#requestsTableBody tr');
+        console.log('Total request rows:', rows.length);
+        
+        rows.forEach((row, index) => {
+            // Use data attributes for filtering
+            const equipment = row.getAttribute('data-equipment') || '';
+            const workerType = row.getAttribute('data-worker-type') || '';
+            const purpose = row.getAttribute('data-purpose') || '';
+            const returnDate = row.getAttribute('data-return-date') || '';
+            
+            console.log(`Row ${index}:`, {equipment, workerType, purpose, returnDate});
+            
+            const equipmentMatch = equipment.includes(equipmentSearch);
+            const workerTypeMatch = !workerTypeFilter || workerType.includes(workerTypeFilter);
+            const purposeMatch = purpose.includes(purposeSearch);
+            const returnDateMatch = !returnDateFilter || returnDate.includes(returnDateFilter);
+            
+            console.log(`Row ${index} matches:`, {equipmentMatch, workerTypeMatch, purposeMatch, returnDateMatch});
+            
+            if (equipmentMatch && workerTypeMatch && purposeMatch && returnDateMatch) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('requestsVisibleCount').textContent = visibleCount;
+        console.log('Final visible requests:', visibleCount);
+    }
+
+    function filterEquipment() {
+        console.log('=== FILTERING EQUIPMENT ===');
+        const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
+        const serialTerm = document.getElementById('serialSearch').value.toLowerCase();
+        const modelTerm = document.getElementById('modelSearch').value.toLowerCase();
+        const divisionFilter = document.getElementById('divisionFilter').value.toLowerCase();
+        const statusFilter = document.getElementById('statusFilter').value;
+        const costFilter = document.getElementById('costFilter').value;
+        const issueDateFrom = document.getElementById('issueDateFrom').value;
+        const issueDateTo = document.getElementById('issueDateTo').value;
+        const returnDateFrom = document.getElementById('returnDateFrom').value;
+        const returnDateTo = document.getElementById('returnDateTo').value;
+        
+        console.log('Equipment filters:', { 
+            searchTerm, serialTerm, modelTerm, divisionFilter, statusFilter, costFilter,
+            issueDateFrom, issueDateTo, returnDateFrom, returnDateTo 
+        });
+        
+        let visibleCount = 0;
+        const rows = document.querySelectorAll('#equipmentTableBody tr');
+        console.log('Total equipment rows:', rows.length);
+        
+        rows.forEach((row, index) => {
+            const name = row.getAttribute('data-name') || '';
+            const serial = row.getAttribute('data-serial') || '';
+            const model = row.getAttribute('data-model') || '';
+            const division = row.getAttribute('data-division') || '';
+            const status = row.getAttribute('data-status') || '';
+            const cost = parseFloat(row.getAttribute('data-cost')) || 0;
+            const issueDate = row.getAttribute('data-issue-date') || '';
+            const returnDate = row.getAttribute('data-return-date') || '';
+            
+            const nameMatch = name.includes(searchTerm);
+            const serialMatch = serial.includes(serialTerm);
+            const modelMatch = model.includes(modelTerm);
+            const divisionMatch = !divisionFilter || division.includes(divisionFilter);
+            const statusMatch = !statusFilter || status === statusFilter;
+            
+            let costMatch = true;
+            if (costFilter === 'low') costMatch = cost < 5000;
+            else if (costFilter === 'medium') costMatch = cost >= 5000 && cost <= 10000;
+            else if (costFilter === 'high') costMatch = cost > 10000;
+            
+            let issueDateMatch = true;
+            if (issueDateFrom && issueDate) {
+                issueDateMatch = issueDate >= issueDateFrom;
+            }
+            if (issueDateTo && issueDate) {
+                issueDateMatch = issueDateMatch && issueDate <= issueDateTo;
+            }
+            
+            let returnDateMatch = true;
+            if (returnDateFrom && returnDate) {
+                returnDateMatch = returnDate >= returnDateFrom;
+            }
+            if (returnDateTo && returnDate) {
+                returnDateMatch = returnDateMatch && returnDate <= returnDateTo;
+            }
+            
+            if (nameMatch && serialMatch && modelMatch && divisionMatch && statusMatch && costMatch && issueDateMatch && returnDateMatch) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('equipmentVisibleCount').textContent = visibleCount;
+        console.log('Final visible equipment:', visibleCount);
+    }
+
+    function filterSummary() {
+        console.log('=== FILTERING SUMMARY ===');
+        const divisionSearch = document.getElementById('summaryDivisionSearch').value.toLowerCase();
+        const minEquipment = document.getElementById('minEquipmentFilter').value;
+        const maxEquipment = document.getElementById('maxEquipmentFilter').value;
+        const approvalRateFilter = document.getElementById('approvalRateFilter').value;
+        const sortBy = document.getElementById('summarySortFilter').value;
+        
+        console.log('Summary filters:', { divisionSearch, minEquipment, maxEquipment, approvalRateFilter, sortBy });
+        
+        let rows = Array.from(document.querySelectorAll('#summaryTableBody tr'));
+        console.log('Total summary rows:', rows.length);
+        
+        // Filter rows
+        rows.forEach((row, index) => {
+            const division = row.getAttribute('data-division') || '';
+            const total = parseInt(row.getAttribute('data-total')) || 0;
+            const approval = parseFloat(row.getAttribute('data-approval')) || 0;
+            
+            const divisionMatch = division.includes(divisionSearch);
+            const minMatch = !minEquipment || total >= parseInt(minEquipment);
+            const maxMatch = !maxEquipment || total <= parseInt(maxEquipment);
+            
+            let approvalMatch = true;
+            if (approvalRateFilter === 'high') approvalMatch = approval >= 80;
+            else if (approvalRateFilter === 'medium') approvalMatch = approval >= 60 && approval < 80;
+            else if (approvalRateFilter === 'low') approvalMatch = approval < 60;
+            
+            if (divisionMatch && minMatch && maxMatch && approvalMatch) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Sort rows
+        const tbody = document.getElementById('summaryTableBody');
+        const visibleRows = rows.filter(row => row.style.display !== 'none');
+        
+        visibleRows.sort((a, b) => {
+            let aValue, bValue;
+            
+            switch(sortBy) {
+                case 'total':
+                    aValue = parseInt(a.getAttribute('data-total')) || 0;
+                    bValue = parseInt(b.getAttribute('data-total')) || 0;
+                    break;
+                case 'available':
+                    aValue = parseInt(a.getAttribute('data-available')) || 0;
+                    bValue = parseInt(b.getAttribute('data-available')) || 0;
+                    break;
+                case 'assigned':
+                    aValue = parseInt(a.getAttribute('data-assigned')) || 0;
+                    bValue = parseInt(b.getAttribute('data-assigned')) || 0;
+                    break;
+                case 'value':
+                    aValue = parseFloat(a.getAttribute('data-value')) || 0;
+                    bValue = parseFloat(b.getAttribute('data-value')) || 0;
+                    break;
+                case 'approval':
+                    aValue = parseFloat(a.getAttribute('data-approval')) || 0;
+                    bValue = parseFloat(b.getAttribute('data-approval')) || 0;
+                    break;
+                default:
+                    aValue = parseInt(a.getAttribute('data-total')) || 0;
+                    bValue = parseInt(b.getAttribute('data-total')) || 0;
+            }
+            
+            return bValue - aValue;
+        });
+        
+        // Reorder rows in table
+        visibleRows.forEach(row => tbody.appendChild(row));
+        
+        console.log('Summary filtering completed - visible:', visibleRows.length);
+    }
+
+    function clearRequestsFilters() {
+        document.getElementById('requestsEquipmentSearch').value = '';
+        document.getElementById('requestsWorkerTypeFilter').value = '';
+        document.getElementById('requestsPurposeSearch').value = '';
+        document.getElementById('requestsReturnDateFilter').value = '';
+        filterRequests();
+    }
+
+    function clearEquipmentFilters() {
+        document.getElementById('equipmentSearch').value = '';
+        document.getElementById('serialSearch').value = '';
+        document.getElementById('modelSearch').value = '';
+        document.getElementById('divisionFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        document.getElementById('costFilter').value = '';
+        document.getElementById('issueDateFrom').value = '';
+        document.getElementById('issueDateTo').value = '';
+        document.getElementById('returnDateFrom').value = '';
+        document.getElementById('returnDateTo').value = '';
+        filterEquipment();
+    }
+
+    function clearSummaryFilters() {
+        document.getElementById('summaryDivisionSearch').value = '';
+        document.getElementById('minEquipmentFilter').value = '';
+        document.getElementById('maxEquipmentFilter').value = '';
+        document.getElementById('approvalRateFilter').value = '';
+        document.getElementById('summarySortFilter').value = 'total';
+        filterSummary();
+    }
+
+    // KEEP ALL THE WORKING EQUIPMENT MANAGEMENT FUNCTIONS
+    function handleEquipmentRequest(historyId, action) {
+        var message = "Are you sure you want to " + action + " this equipment request?";
+        if (!confirm(message)) {
+            return;
+        }
+
+        fetch('/handle_equipment_request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                history_id: historyId,
+                action: action
+            })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('An error occurred while processing the request');
+        });
+    }
+
+    function addNewEquipment() {
+        var form = document.getElementById('addEquipmentForm');
+        var formData = new FormData(form);
+        var data = {};
+        
+        for (var pair of formData.entries()) {
+            data[pair[0]] = pair[1];
+        }
+
+        if (!data.serial_no || !data.name_of_equipment || !data.purchase_date || !data.equipment_cost || !data.division_id) {
+            alert('Please fill all required fields');
+            return;
+        }
+
+        fetch('/add_equipment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                alert(data.message);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('addEquipmentModal'));
+                modal.hide();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('An error occurred while adding equipment');
+        });
+    }
+
+    function showIssueEquipmentModal(equipmentId, equipmentName) {
+        document.getElementById('issue_equipment_id').value = equipmentId;
+        document.getElementById('issue_equipment_name').value = equipmentName;
+        document.getElementById('issue_worker_id').value = '';
+        document.querySelector('input[name="expected_return_date"]').value = '';
+        document.querySelector('textarea[name="purpose"]').value = '';
+        document.querySelector('textarea[name="notes"]').value = '';
+        
+        var modal = new bootstrap.Modal(document.getElementById('issueEquipmentModal'));
+        modal.show();
+    }
+
+    function confirmIssueEquipment() {
+        var form = document.getElementById('issueEquipmentForm');
+        var formData = new FormData(form);
+        var data = {};
+        
+        for (var pair of formData.entries()) {
+            data[pair[0]] = pair[1];
+        }
+
+        if (!data.worker_id || !data.expected_return_date) {
+            alert('Please select a worker and expected return date');
+            return;
+        }
+
+        fetch('/issue_equipment_direct', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                alert(data.message);
+                var modal = bootstrap.Modal.getInstance(document.getElementById('issueEquipmentModal'));
+                modal.hide();
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('An error occurred while issuing equipment');
+        });
+    }
+
+    function returnEquipment(equipmentId, equipmentName) {
+        var message = "Are you sure you want to return \"" + equipmentName + "\"?";
+        if (!confirm(message)) {
+            return;
+        }
+
+        var notes = prompt('Enter return notes (optional):', 'Equipment returned by division head');
+
+        fetch('/return_equipment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                equipment_id: equipmentId,
+                notes: notes || 'Equipment returned by division head'
+            })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(function(error) {
+            console.error('Error:', error);
+            alert('An error occurred while returning equipment');
+        });
+    }
+
+    function viewEquipmentHistory(equipmentId) {
+        fetch('/get_equipment_history/' + equipmentId)
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    displayEquipmentHistory(data.history);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                alert('An error occurred while fetching history');
+            });
+    }
+
+    function displayEquipmentHistory(history) {
+        var historyContent = document.getElementById('historyContent');
+        
+        if (history.length === 0) {
+            historyContent.innerHTML = '<p class="text-muted text-center">No history found for this equipment.</p>';
+        } else {
+            var html = '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Action</th><th>Worker</th><th>Division</th><th>Date</th><th>Purpose</th><th>Notes</th></tr></thead><tbody>';
+            
+            history.forEach(function(item) {
+                html += '<tr>';
+                html += '<td><span class="badge bg-' + getActionBadgeColor(item.action_type) + '">' + item.action_type + '</span></td>';
+                html += '<td>' + (item.worker_name || 'N/A') + '</td>';
+                html += '<td>' + (item.division_name || 'N/A') + '</td>';
+                html += '<td>' + new Date(item.action_date).toLocaleString() + '</td>';
+                html += '<td>' + (item.purpose || 'N/A') + '</td>';
+                html += '<td>' + (item.notes || 'N/A') + '</td>';
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table></div>';
+            historyContent.innerHTML = html;
+        }
+        
+        var modal = new bootstrap.Modal(document.getElementById('historyModal'));
+        modal.show();
+    }
+
+    function getActionBadgeColor(actionType) {
+        switch(actionType) {
+            case 'requested': return 'primary';
+            case 'issued': return 'success';
+            case 'returned': return 'info';
+            case 'rejected': return 'danger';
+            default: return 'secondary';
+        }
+    }
+
+    // Reset forms when modals are closed
+    document.getElementById('addEquipmentModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('addEquipmentForm').reset();
+    });
+
+    document.getElementById('issueEquipmentModal').addEventListener('hidden.bs.modal', function () {
+        document.getElementById('issueEquipmentForm').reset();
+    });
+</script>
+</body>
+</html>

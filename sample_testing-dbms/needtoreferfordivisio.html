@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - MSEDCL Grievance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <img src="{{ url_for('static', filename='logo.svg') }}" alt="MSEDCL Logo" class="site-logo" width="48" height="48">
+                <h1>MSEDCL Electricity Grievance System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('dashboard') }}" class="active">Dashboard</a></li>
+                    <li><a href="#raise-issue">Raise Issue</a></li>
+                    <li><a href="#track-issues">Track Issues</a></li>
+                    <li><a href="#profile">Profile</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <span class="welcome-text">Welcome, {{ user_name }}</span>
+                <a href="{{ url_for('logout') }}" class="btn btn-logout">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Welcome Notification -->
+    <div id="welcomeNotification" class="notification">
+        <div class="notification-content">
+            <span class="notification-message">Welcome to EGS, {{ user_name }}! 🎉</span>
+            <button class="notification-close" id="closeNotification">×</button>
+        </div>
+    </div>
+
+    <!-- Dashboard Welcome Section -->
+    <section class="dashboard-welcome">
+        <div class="welcome-content">
+            <h2>Hello, {{ user_name }}! 👋</h2>
+            <p>Welcome to your MSEDCL Grievance System Dashboard</p>
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section class="quick-actions">
+        <div class="container">
+            <div class="action-buttons">
+                <a href="#raise-issue" class="btn btn-primary btn-large">
+                    📝 Raise New Issue
+                </a>
+                <a href="#track-issues" class="btn btn-secondary btn-large">
+                    🔍 Track Existing Issues
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- System Statistics -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <h2 class="section-title">System Overview</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number" id="workersCount">{{ stats.total_workers if stats else 0 }}</span>
+                    <span class="stat-label">Active Workers</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="resolvedCount">{{ stats.resolved_issues if stats else 0 }}</span>
+                    <span class="stat-label">Issues Resolved</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="usersCount">{{ stats.total_users if stats else 0 }}</span>
+                    <span class="stat-label">Registered Users</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number" id="activeIssues">{{ stats.active_issues if stats else 0 }}</span>
+                    <span class="stat-label">Active Issues</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Dashboard Grid -->
+    <section class="dashboard-main">
+        <div class="container">
+            <div class="dashboard-grid">
+                <!-- Left Column -->
+                <div class="dashboard-left">
+                    <!-- Live Service Status -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🏢 Live Service Status</h3>
+                        </div>
+                        <div class="card-content">
+                            {% if live_status %}
+                            <div class="service-status-list">
+                                {% for division in live_status %}
+                                <div class="status-item">
+                                    <div class="status-info">
+                                        <h4>{{ division.division_name }}</h4>
+                                        <div class="status-details">
+                                            <span class="detail">👥 {{ division.available_workers }}/{{ division.total_workers }} Workers</span>
+                                            <span class="detail">⚠️ {{ division.pending_issues }} Issues</span>
+                                            <span class="detail">✅ {{ division.resolved_issues }} Resolved</span>
+                                        </div>
+                                    </div>
+                                    <div class="status-indicator" data-available="{{ division.available_workers }}">
+                                        <!-- Status will be set by JavaScript -->
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-data">No service status data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📊 Recent Activity</h3>
+                        </div>
+                        <div class="card-content">
+                            {% if recent_activity %}
+                            <div class="activity-feed">
+                                {% for activity in recent_activity %}
+                                <div class="activity-item">
+                                    <div class="activity-icon">
+                                        <!-- Icon will be set by JavaScript -->
+                                    </div>
+                                    <div class="activity-details">
+                                        <p class="activity-text" data-activity-type="{{ activity.activity_type }}" data-user-name="{{ activity.user_name }}" data-title="{{ activity.title }}" data-worker-name="{{ activity.worker_name }}">
+                                            <!-- Content will be set by JavaScript -->
+                                        </p>
+                                        <span class="activity-time">{{ activity.timestamp }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-data">No recent activity</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="dashboard-right">
+                    <!-- Top Divisions -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>🏆 Top Performing Divisions</h3>
+                        </div>
+                        <div class="card-content">
+                            {% if top_divisions %}
+                            <div class="divisions-list">
+                                {% for division in top_divisions %}
+                                <div class="division-item">
+                                    <div class="division-rank">#{{ loop.index }}</div>
+                                    <div class="division-info">
+                                        <h4>{{ division.division_name }}</h4>
+                                        <div class="division-stats">
+                                            <span>📊 {{ division.total_issues }} Total</span>
+                                            <span>✅ {{ division.resolved_issues }} Resolved</span>
+                                            <span>🎯 {{ division.resolution_rate }}% Rate</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-data">No division data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Issue Type Distribution -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3>📈 Issue Types</h3>
+                        </div>
+                        <div class="card-content">
+                            {% if issue_types %}
+                            <div class="issue-types-list">
+                                {% for type in issue_types %}
+                                <div class="issue-type-item">
+                                    <div class="type-name">{{ type.issue_type|replace('_', ' ')|title }}</div>
+                                    <div class="type-stats">
+                                        <div class="type-bar">
+                                            <div class="type-bar-fill" data-percentage="{{ type.percentage }}"></div>
+                                        </div>
+                                        <span class="type-count">{{ type.issue_count }} ({{ type.percentage }}%)</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <p class="no-data">No issue type data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Issues Section -->
+            <section id="track-issues" class="user-issues-section">
+                <div class="section-header">
+                    <h2>Your Issues</h2>
+                    <div class="section-actions">
+                        <input type="text" id="issueSearch" placeholder="Search issues..." class="search-input">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="issues-table">
+                    <div class="table-header">
+                        <h3>Issue History</h3>
+                    </div>
+                    <div class="table-content">
+                        {% if user_issues %}
+                        <table id="issuesTable">
+                            <thead>
+                                <tr>
+                                    <th>Issue ID</th>
+                                    <th>Title</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Created Date</th>
+                                    <th>Division</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for issue in user_issues %}
+                                <tr data-issue-id="{{ issue.issue_id }}">
+                                    <td>#{{ issue.issue_id }}</td>
+                                    <td>{{ issue.title }}</td>
+                                    <td>{{ issue.issue_type|replace('_', ' ')|title }}</td>
+                                    <td>
+                                        <span class="status-badge status-{{ issue.status }}">
+                                            {{ issue.status|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="priority-badge priority-{{ issue.priority }}">
+                                            {{ issue.priority|title }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if issue.created_at %}
+                                            {{ issue.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ issue.division_name }}</td>
+                                    <td>
+                                        <button class="btn btn-small btn-primary edit-issue-btn" data-issue-id="{{ issue.issue_id }}">
+                                            ✏️ Edit
+                                        </button>
+                                        <button class="btn btn-small btn-secondary view-logs-btn" data-issue-id="{{ issue.issue_id }}">
+                                            📋 Logs
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="no-issues">
+                            <p>You haven't raised any issues yet.</p>
+                            <a href="#raise-issue" class="btn btn-primary">Raise Your First Issue</a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 MSEDCL Electricity Grievance System. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='dashboard.js') }}"></script>
+</body>
+</html>

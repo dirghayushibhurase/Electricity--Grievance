@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSEDCL Electricity Grievance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>MSEDCL Electricity Grievance System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{url_for('about')}}">About</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-login">Login</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Powering Maharashtra with Reliable Service</h2>
+            <p>Your trusted platform for quick resolution of electricity-related grievances</p>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <h2 class="section-title">Our Service Impact</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">{{ stats.total_workers if stats else 0 }}</span>
+                    <span class="stat-label">Active Workers</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ stats.resolved_issues if stats else 0 }}</span>
+                    <span class="stat-label">Issues Resolved</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ stats.total_users if stats else 0 }}</span>
+                    <span class="stat-label">Registered Users</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ stats.satisfaction_rate if stats else 0 }}%</span>
+                    <span class="stat-label">Customer Satisfaction</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Top Divisions Section -->
+    {% if top_divisions %}
+    <section class="divisions-section">
+        <div class="stats-container">
+            <h2 class="section-title">Top Performing Divisions</h2>
+            <div class="divisions-grid">
+                {% for division in top_divisions %}
+                <div class="division-card">
+                    <h3>{{ division.division_name }}</h3>
+                    <div class="division-stats">
+                        <p>Total Issues: {{ division.total_issues }}</p>
+                        <p>Resolved: {{ division.resolved_issues }}</p>
+                        <p>Success Rate: {{ division.resolution_rate }}%</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 MSEDCL Electricity Grievance System. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

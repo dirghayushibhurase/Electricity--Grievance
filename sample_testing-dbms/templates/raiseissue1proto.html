@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raise New Issue - MSEDCL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+            --msedcl-light: #f5f5f5;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .btn-msedcl {
+            background: var(--msedcl-red);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-msedcl:hover {
+            background: var(--msedcl-dark);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--msedcl-red);
+            box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
+        }
+        
+        .issue-type-card {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .issue-type-card:hover {
+            border-color: var(--msedcl-red);
+            background-color: #fff5f5;
+        }
+        
+        .issue-type-card.selected {
+            border-color: var(--msedcl-red);
+            background-color: #fff5f5;
+        }
+        
+        .issue-type-icon {
+            font-size: 1.5rem;
+            color: var(--msedcl-red);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Grievance System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> Welcome, {{ user_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/raise-issue">
+                                <i class="fas fa-plus-circle"></i> Raise New Issue
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/track-issues">
+                                <i class="fas fa-list-alt"></i> Track Issues
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/profile">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-plus-circle me-2 text-danger"></i>Raise New Issue
+                    </h2>
+                    <a href="/track-issues" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Issues
+                    </a>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-exclamation-circle me-2"></i>Issue Details
+                    </div>
+                    <div class="card-body">
+                        <!-- FORM IS NOW UNCOMMENTED -->
+                        <form id="issueForm" method="POST" action="/api/raise-issue" enctype="multipart/form-data">
+                            <!-- Issue Type Selection -->
+                            <div class="mb-4">
+                                <label class="form-label">Issue Type *</label>
+                                <div class="row g-3" id="issueTypeSelection">
+                                    <div class="col-md-4">
+                                        <div class="issue-type-card" data-type="power_outage">
+                                            <div class="issue-type-icon">
+                                                <i class="fas fa-power-off"></i>
+                                            </div>
+                                            <h6>Power Outage</h6>
+                                            <small class="text-muted">Complete or partial loss of electricity</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="issue-type-card" data-type="voltage_fluctuation">
+                                            <div class="issue-type-icon">
+                                                <i class="fas fa-tachometer-alt"></i>
+                                            </div>
+                                            <h6>Voltage Fluctuation</h6>
+                                            <small class="text-muted">Unstable voltage levels</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="issue-type-card" data-type="meter_problem">
+                                            <div class="issue-type-icon">
+                                                <i class="fas fa-tachometer-alt"></i>
+                                            </div>
+                                            <h6>Meter Problem</h6>
+                                            <small class="text-muted">Faulty or incorrect meter reading</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="issue-type-card" data-type="billing_dispute">
+                                            <div class="issue-type-icon">
+                                                <i class="fas fa-file-invoice-dollar"></i>
+                                            </div>
+                                            <h6>Billing Dispute</h6>
+                                            <small class="text-muted">Issues with electricity bills</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="issue-type-card" data-type="safety_hazard">
+                                            <div class="issue-type-icon">
+                                                <i class="fas fa-exclamation-triangle"></i>
+                                            </div>
+                                            <h6>Safety Hazard</h6>
+                                            <small class="text-muted">Dangerous electrical situations</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="issue-type-card" data-type="other">
+                                            <div class="issue-type-icon">
+                                                <i class="fas fa-question-circle"></i>
+                                            </div>
+                                            <h6>Other Issue</h6>
+                                            <small class="text-muted">Other electrical problems</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="issue_type" id="selectedIssueType" required>
+                            </div>
+
+                            <!-- Basic Information -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Issue Title *</label>
+                                    <input type="text" class="form-control" name="title" placeholder="Brief description of the issue" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Priority Level *</label>
+                                    <select class="form-select" name="priority" required>
+                                        <option value="">Select Priority</option>
+                                        <option value="low">Low - Minor inconvenience</option>
+                                        <option value="medium">Medium - Needs attention</option>
+                                        <option value="high">High - Urgent issue</option>
+                                        <option value="critical">Critical - Emergency situation</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label class="form-label">Detailed Description *</label>
+                                <textarea class="form-control" name="description" rows="5" placeholder="Please provide detailed information about the issue, including when it started, affected areas, and any other relevant details..." required></textarea>
+                            </div>
+
+                            <!-- Location Information -->
+                            <div class="mb-4">
+                                <h5 class="mb-3"><i class="fas fa-map-marker-alt me-2 text-danger"></i>Location Details</h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Address Line 1 *</label>
+                                        <input type="text" class="form-control" name="address_line1" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Address Line 2</label>
+                                        <input type="text" class="form-control" name="address_line2">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Division *</label>
+                                        <select class="form-select" name="division_id" required>
+                                            <option value="">Select Division</option>
+                                            {% for division in divisions %}
+                                            <option value="{{ division.division_id }}">{{ division.division_name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Image Upload -->
+                            <div class="mb-4">
+                                <label class="form-label">Upload Image (Optional)</label>
+                                <input type="file" class="form-control" name="issue_image" accept="image/*">
+                                <small class="text-muted">Upload a photo of the issue if available (Max 5MB)</small>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-msedcl">
+                                    <i class="fas fa-paper-plane me-1"></i> Submit Issue
+                                </button>
+                                <button type="reset" class="btn btn-outline-secondary">
+                                    <i class="fas fa-redo me-1"></i> Reset Form
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Issue type selection
+        document.querySelectorAll('.issue-type-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.issue-type-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('selectedIssueType').value = this.dataset.type;
+            });
+        });
+
+        // Form submission
+        document.getElementById('issueForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Basic validation
+            if (!document.getElementById('selectedIssueType').value) {
+                alert('Please select an issue type');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Submitting...';
+            submitBtn.disabled = true;
+
+            // Create form data
+            const formData = new FormData(this);
+            
+            // Submit via AJAX
+            fetch('/api/raise-issue', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                },
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Issue submitted successfully! You will be redirected to track your issues.');
+                    window.location.href = '/track-issues';
+                } else {
+                    throw new Error(data.error || 'Unknown error occurred');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting issue: ' + error.message);
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+
+        // Form reset handler
+        document.querySelector('button[type="reset"]').addEventListener('click', function() {
+            document.querySelectorAll('.issue-type-card').forEach(c => c.classList.remove('selected'));
+            document.getElementById('selectedIssueType').value = '';
+        });
+    </script>
+</body>
+</html>

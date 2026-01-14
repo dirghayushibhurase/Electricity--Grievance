@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Issues - MSEDCL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+            --msedcl-light: #f5f5f5;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-resolved { background-color: #d1edff; color: #0c5460; }
+        
+        .priority-badge {
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .priority-low { background-color: #d4edda; color: #155724; }
+        .priority-medium { background-color: #fff3cd; color: #856404; }
+        .priority-high { background-color: #f8d7da; color: #721c24; }
+        .priority-critical { background-color: #dc3545; color: white; }
+        
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .btn-msedcl {
+            background: var(--msedcl-red);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-msedcl:hover {
+            background: var(--msedcl-dark);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .table th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid var(--msedcl-red);
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .table td {
+            vertical-align: middle;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            margin: 0 2px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view { 
+            background: #17a2b8; 
+            color: white; 
+            border: none;
+        }
+        .btn-view:hover { 
+            background: #138496; 
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .no-issues {
+            text-align: center;
+            padding: 60px 40px;
+            color: #6c757d;
+        }
+        
+        .no-issues i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+        
+        .issue-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .issue-description {
+            font-size: 0.85rem;
+            color: #6c757d;
+            line-height: 1.3;
+        }
+        
+        .table-responsive {
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+        }
+        
+        .results-count {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Grievance System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> Welcome, {{ user_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('raise_issue_page') }}">
+                                <i class="fas fa-plus-circle"></i> Raise New Issue
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('track_issues') }}">
+                                <i class="fas fa-list-alt"></i> Track Issues
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('profile') }}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-list-alt me-2 text-danger"></i>Track Your Issues
+                    </h2>
+                    <a href="{{ url_for('raise_issue_page') }}" class="btn btn-msedcl">
+                        <i class="fas fa-plus me-1"></i> Raise New Issue
+                    </a>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filter Issues</h5>
+                    <form id="filterForm" method="GET" action="/track-issues">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Status</label>
+                                <select class="form-select" name="status" id="statusFilter">
+                                    <option value="">All Status</option>
+                                    <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+                                    <option value="resolved" {% if request.args.get('status') == 'resolved' %}selected{% endif %}>Resolved</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Priority</label>
+                                <select class="form-select" name="priority" id="priorityFilter">
+                                    <option value="">All Priority</option>
+                                    <option value="low" {% if request.args.get('priority') == 'low' %}selected{% endif %}>Low</option>
+                                    <option value="medium" {% if request.args.get('priority') == 'medium' %}selected{% endif %}>Medium</option>
+                                    <option value="high" {% if request.args.get('priority') == 'high' %}selected{% endif %}>High</option>
+                                    <option value="critical" {% if request.args.get('priority') == 'critical' %}selected{% endif %}>Critical</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Issue Type</label>
+                                <select class="form-select" name="issue_type" id="typeFilter">
+                                    <option value="">All Types</option>
+                                    <option value="power_outage" {% if request.args.get('issue_type') == 'power_outage' %}selected{% endif %}>Power Outage</option>
+                                    <option value="voltage_fluctuation" {% if request.args.get('issue_type') == 'voltage_fluctuation' %}selected{% endif %}>Voltage Fluctuation</option>
+                                    <option value="meter_problem" {% if request.args.get('issue_type') == 'meter_problem' %}selected{% endif %}>Meter Problem</option>
+                                    <option value="billing_dispute" {% if request.args.get('issue_type') == 'billing_dispute' %}selected{% endif %}>Billing Dispute</option>
+                                    <option value="safety_hazard" {% if request.args.get('issue_type') == 'safety_hazard' %}selected{% endif %}>Safety Hazard</option>
+                                    <option value="equipment_damage" {% if request.args.get('issue_type') == 'equipment_damage' %}selected{% endif %}>Equipment Damage</option>
+                                    <option value="street_light_fault" {% if request.args.get('issue_type') == 'street_light_fault' %}selected{% endif %}>Street Light Fault</option>
+                                    <option value="transformer_issue" {% if request.args.get('issue_type') == 'transformer_issue' %}selected{% endif %}>Transformer Issue</option>
+                                    <option value="wire_fault" {% if request.args.get('issue_type') == 'wire_fault' %}selected{% endif %}>Wire Fault</option>
+                                    <option value="electric_shock" {% if request.args.get('issue_type') == 'electric_shock' %}selected{% endif %}>Electric Shock</option>
+                                    <option value="other" {% if request.args.get('issue_type') == 'other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Division</label>
+                                <select class="form-select" name="division" id="divisionFilter">
+                                    <option value="">All Divisions</option>
+                                    {% for division in divisions %}
+                                    <option value="{{ division.division_id }}" {% if request.args.get('division') == division.division_id|string %}selected{% endif %}>
+                                        {{ division.division_name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex gap-2 align-items-center">
+                                    <button type="submit" class="btn btn-msedcl">
+                                        <i class="fas fa-search me-1"></i> Apply Filters
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearFilters()">
+                                        <i class="fas fa-times me-1"></i> Clear Filters
+                                    </button>
+                                    <span class="results-count ms-3">
+                                        {{ user_issues|length }} issue(s) found
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Issues Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-table me-2"></i>Your Issues</span>
+                        <div>
+                            <span class="badge bg-light text-dark me-2">
+                                <i class="fas fa-sync-alt me-1"></i> Live
+                            </span>
+                            <button class="btn btn-sm btn-outline-light" onclick="refreshPage()">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% if user_issues %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Issue ID</th>
+                                        <th>Title & Description</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Priority</th>
+                                        <th>Created Date</th>
+                                        <th>Division</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for issue in user_issues %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ issue.issue_id }}</strong>
+                                        </td>
+                                        <td>
+                                            <div class="issue-title">{{ issue.title }}</div>
+                                            <div class="issue-description">
+                                                {{ issue.description[:80] }}{% if issue.description|length > 80 %}...{% endif %}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% set type_labels = {
+                                                'power_outage': 'Power Outage',
+                                                'voltage_fluctuation': 'Voltage Fluctuation',
+                                                'meter_problem': 'Meter Problem',
+                                                'billing_dispute': 'Billing Dispute',
+                                                'safety_hazard': 'Safety Hazard',
+                                                'equipment_damage': 'Equipment Damage',
+                                                'street_light_fault': 'Street Light Fault',
+                                                'transformer_issue': 'Transformer Issue',
+                                                'wire_fault': 'Wire Fault',
+                                                'electric_shock': 'Electric Shock',
+                                                'other': 'Other'
+                                            } %}
+                                            <span class="badge bg-secondary">
+                                                {{ type_labels.get(issue.issue_type, issue.issue_type) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="status-badge status-{{ issue.status }}">
+                                                {% if issue.status == 'pending' %}
+                                                <i class="fas fa-clock me-1"></i>
+                                                {% else %}
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                {% endif %}
+                                                {{ issue.status|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="priority-badge priority-{{ issue.priority }}">
+                                                {% if issue.priority == 'low' %}
+                                                <i class="fas fa-arrow-down me-1"></i>
+                                                {% elif issue.priority == 'medium' %}
+                                                <i class="fas fa-minus me-1"></i>
+                                                {% elif issue.priority == 'high' %}
+                                                <i class="fas fa-arrow-up me-1"></i>
+                                                {% else %}
+                                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                                {% endif %}
+                                                {{ issue.priority|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if issue.created_at %}
+                                                {{ issue.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-dark">
+                                                {{ issue.division_name }}
+                                            </span>
+                                        </td>
+                                     <td>
+    <div class="btn-group btn-group-sm">
+        <button class="action-btn btn-view" title="View Details" data-issue-id="{{ issue.issue_id }}" onclick="viewIssue(this.getAttribute('data-issue-id'))">
+            <i class="fas fa-eye me-1"></i>View
+        </button>
+        {% if issue.status == 'pending' %}
+        <button class="action-btn btn-warning" title="Edit Issue" data-issue-id="{{ issue.issue_id }}" onclick="editIssue(this.getAttribute('data-issue-id'))" style="background: #ffc107; color: black; border: none;">
+            <i class="fas fa-edit me-1"></i>Edit
+        </button>
+        {% endif %}
+    </div>
+</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="no-issues">
+                            <i class="fas fa-inbox"></i>
+                            <h4>No Issues Found</h4>
+                            <p class="mb-3">You haven't raised any issues yet or no issues match your filters.</p>
+                            <a href="{{ url_for('raise_issue_page') }}" class="btn btn-msedcl">
+                                <i class="fas fa-plus me-1"></i> Raise Your First Issue
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- View Issue Modal -->
+<div class="modal fade" id="viewIssueModal" tabindex="-1" aria-labelledby="viewIssueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewIssueModalLabel">
+                    <i class="fas fa-eye me-2"></i>Issue Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="issueDetailsContent">
+                    <!-- Content will be loaded via JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let viewIssueModal = null;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Track Issues page loaded');
+        
+        // Initialize modal
+        viewIssueModal = new bootstrap.Modal(document.getElementById('viewIssueModal'));
+        
+        // Add active class to current page in sidebar
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.sidebar .nav-link');
+        
+        navLinks.forEach(function(link) {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    });
+    
+    function clearFilters() {
+        document.getElementById('filterForm').reset();
+        window.location.href = '/track-issues';
+    }
+    
+    function refreshPage() {
+        window.location.reload();
+    }
+    
+    function viewIssue(issueId) {
+        // Show loading state
+        document.getElementById('issueDetailsContent').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Loading issue details...</p>
+            </div>
+        `;
+        
+        // Fetch issue details
+        fetch('/api/issue-details/' + issueId)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    displayIssueDetails(data.issue);
+                    // Log the view action
+                    logIssueView(issueId);
+                } else {
+                    throw new Error(data.error || 'Failed to load issue details');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error:', error);
+                document.getElementById('issueDetailsContent').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading issue details: ${error.message}
+                    </div>
+                `;
+            });
+        
+        viewIssueModal.show();
+    }
+    
+    function displayIssueDetails(issue) {
+        const typeLabels = {
+            'power_outage': 'Power Outage',
+            'voltage_fluctuation': 'Voltage Fluctuation', 
+            'meter_problem': 'Meter Problem',
+            'billing_dispute': 'Billing Dispute',
+            'safety_hazard': 'Safety Hazard',
+            'equipment_damage': 'Equipment Damage',
+            'street_light_fault': 'Street Light Fault',
+            'transformer_issue': 'Transformer Issue',
+            'wire_fault': 'Wire Fault',
+            'electric_shock': 'Electric Shock',
+            'other': 'Other'
+        };
+        
+        const content = `
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h5 class="text-primary">#${issue.issue_id} - ${issue.title}</h5>
+                    <p class="text-muted mb-0">${typeLabels[issue.issue_type] || issue.issue_type}</p>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <strong>Status:</strong>
+                    <span class="status-badge status-${issue.status} ms-2">
+                        ${issue.status === 'pending' ? '<i class="fas fa-clock me-1"></i>Pending' : '<i class="fas fa-check-circle me-1"></i>Resolved'}
+                    </span>
+                </div>
+                <div class="col-md-6">
+                    <strong>Priority:</strong>
+                    <span class="priority-badge priority-${issue.priority} ms-2">
+                        ${issue.priority.charAt(0).toUpperCase() + issue.priority.slice(1)}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="row mb-3">
+                <div class="col-12">
+                    <strong>Division:</strong>
+                    <span class="ms-2">${issue.division_name}</span>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="card border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-users me-2"></i>Worker Assignment Status
+                            </h6>
+                            ${issue.assigned_workers_count > 0 ? `
+                                <div class="alert alert-success mb-0">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                                        <div>
+                                            <h6 class="alert-heading mb-1">Workers Assigned</h6>
+                                            <p class="mb-0">
+                                                <strong>${issue.assigned_workers_count} worker(s)</strong> are assigned to your issue.
+                                                ${issue.assigned_worker_names ? `<br><small>Assigned workers: ${issue.assigned_worker_names}</small>` : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="alert alert-info mb-0">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-clock fa-2x me-3"></i>
+                                        <div>
+                                            <h6 class="alert-heading mb-1">Awaiting Assignment</h6>
+                                            <p class="mb-0">
+                                                No workers assigned yet. Your issue is in the queue and will be assigned to available workers soon.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            ${issue.status === 'pending' ? `
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> You can edit this issue while it's pending. Click the "Edit" button in the issues table.
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        `;
+        
+        document.getElementById('issueDetailsContent').innerHTML = content;
+    }
+    
+    function logIssueView(issueId) {
+        // Log the view action to the audit trail
+        fetch('/api/log-issue-view', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                issue_id: issueId,
+                action_type: 'VIEWED'
+            })
+        }).catch(function(error) {
+            console.error('Error logging view:', error);
+        });
+    }
+    
+    function editIssue(issueId) {
+        window.location.href = '/edit-issue/' + issueId;
+    }
+    
+    // Auto-refresh every 30 seconds if there are pending issues
+    setInterval(function() {
+        const hasPendingIssues = document.querySelector('.status-pending');
+        if (hasPendingIssues) {
+            console.log('Auto-refreshing for pending issues...');
+            refreshPage();
+        }
+    }, 30000);
+</script>
+</body>
+</html>

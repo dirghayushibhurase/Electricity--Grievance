@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - MSEDCL Electricity Grievance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">
+                <div class="logo-icon">⚡</div>
+                <h1>MSEDCL Electricity Grievance System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('about') }}" class="active">About</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <a href="{{ url_for('login') }}" class="btn btn-login">Login</a>
+                <a href="{{ url_for('signup') }}" class="btn btn-signup">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h2>About MSEDCL Grievance System</h2>
+            <p>Empowering citizens with efficient electricity grievance resolution</p>
+        </div>
+    </section>
+
+    <!-- About Content Section -->
+    <section class="about-section">
+        <div class="stats-container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2 class="section-title">Our Mission</h2>
+                    <p class="about-description">
+                        The MSEDCL Electricity Grievance System is dedicated to providing 
+                        Maharashtra citizens with a seamless platform to report and track 
+                        electricity-related issues. Our mission is to ensure quick resolution 
+                        and transparent communication between consumers and service providers.
+                    </p>
+                    
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">🚀</div>
+                            <h3>Quick Resolution</h3>
+                            <p>Fast-track grievance resolution with real-time status updates and dedicated support teams.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔍</div>
+                            <h3>Transparent Tracking</h3>
+                            <p>Monitor your complaint status from submission to resolution with complete transparency.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">👥</div>
+                            <h3>Dedicated Workforce</h3>
+                            <p>Access to trained professionals and technicians across all divisions in Maharashtra.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📊</div>
+                            <h3>Performance Analytics</h3>
+                            <p>Comprehensive reporting and analytics to ensure service quality and continuous improvement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="process-section">
+        <div class="stats-container">
+            <h2 class="section-title">How It Works</h2>
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <h3>Register & Login</h3>
+                    <p>Create your account or login to access the grievance system</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <h3>Report Issue</h3>
+                    <p>Submit your electricity-related grievance with detailed information</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <h3>Track Progress</h3>
+                    <p>Monitor your complaint status and receive real-time updates</p>
+                </div>
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <h3>Get Resolved</h3>
+                    <p>Receive prompt resolution from our dedicated technical teams</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Team Section -->
+    <section class="team-section">
+        <div class="stats-container">
+            <h2 class="section-title">Our Commitment</h2>
+            <div class="commitment-grid">
+                <div class="commitment-card">
+                    <h3>24/7 Support</h3>
+                    <p>Round-the-clock customer support to address your electricity concerns</p>
+                </div>
+                <div class="commitment-card">
+                    <h3>Quality Service</h3>
+                    <p>Dedicated to maintaining the highest standards of service quality</p>
+                </div>
+                <div class="commitment-card">
+                    <h3>Quick Response</h3>
+                    <p>Rapid response times with efficient grievance resolution</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="stats-container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <h3>📞 Customer Care</h3>
+                    <p>1800-102-3435</p>
+                </div>
+                <div class="contact-item">
+                    <h3>📧 Email Support</h3>
+                    <p>grievance@msedcl.in</p>
+                </div>
+                <div class="contact-item">
+                    <h3>🏢 Office Hours</h3>
+                    <p>Monday - Saturday: 9:00 AM - 6:00 PM</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 MSEDCL Electricity Grievance System. All rights reserved.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MSEDCL Division Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='division_styles.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('division_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Division Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_issues') }}">
+                                <i class="fas fa-exclamation-circle"></i> Issues
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_workers') }}">
+                                <i class="fas fa-users"></i> Workers
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_logs') }}">
+                                <i class="fas fa-clipboard-list"></i> Activity Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('division_profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Profile Header -->
+                <div class="profile-header text-center">
+                    <div class="profile-pic">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <h3>{{ user_info.name if user_info else user_name }}</h3>
+                    <p class="mb-0">
+                        Division Head | {{ division_name }}
+                    </p>
+                </div>
+
+                <div class="row">
+                    <!-- Left Column - Profile Information -->
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-user me-2"></i>Personal Information
+                            </div>
+                            <div class="card-body">
+                                <form id="profileForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Full Name</label>
+                                                <input type="text" class="form-control" id="name" name="name" 
+                                                       value="{{ user_info.name if user_info else user_name }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="email" class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="email" name="email" 
+                                                       value="{{ user_info.email if user_info else '' }}" required>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone" 
+                                               value="{{ user_info.phone if user_info else '' }}" 
+                                               pattern="[0-9]{10}" required>
+                                        <div class="form-text">10-digit phone number</div>
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Profile updates will be logged for audit purposes.
+                                        </small>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-msedcl">
+                                        <i class="fas fa-save me-2"></i>Update Profile
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Change Password -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <i class="fas fa-lock me-2"></i>Change Password
+                            </div>
+                            <div class="card-body">
+                                <form id="passwordForm">
+                                    <div class="mb-3">
+                                        <label for="current_password" class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="new_password" class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">
+                                        <div class="form-text">Password must be at least 6 characters long</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="confirm_password" class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-msedcl">
+                                        <i class="fas fa-key me-2"></i>Change Password
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Account Information -->
+                    <div class="col-lg-6">
+                        <!-- Account Information -->
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-id-card me-2"></i>Account Information
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Head ID:</strong><br>
+                                        <span class="text-muted">{{ user_info.head_id if user_info else 'N/A' }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Division ID:</strong><br>
+                                        <span class="text-muted">{{ user_info.division_id if user_info else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Division:</strong><br>
+                                        <span class="text-muted">{{ division_name }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Account Status:</strong><br>
+                                        <span class="badge {% if user_info and user_info.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ 'Active' if user_info and user_info.is_active else 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Email:</strong><br>
+                                        <span class="text-muted">{{ user_info.email if user_info else 'N/A' }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Phone:</strong><br>
+                                        <span class="text-muted">{{ user_info.phone if user_info else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <i class="fas fa-rocket me-2"></i>Quick Actions
+                            </div>
+                            <div class="card-body">
+                                <div class="quick-actions-grid">
+                                    <a href="{{ url_for('division_workers') }}" class="action-card primary">
+                                        <div class="action-icon">
+                                            <i class="fas fa-users"></i>
+                                        </div>
+                                        <h6>Manage Workers</h6>
+                                        <small class="text-muted">Add, edit or remove workers</small>
+                                    </a>
+                                    <a href="{{ url_for('division_issues') }}" class="action-card">
+                                        <div class="action-icon">
+                                            <i class="fas fa-tasks"></i>
+                                        </div>
+                                        <h6>View Issues</h6>
+                                        <small class="text-muted">Monitor and assign issues</small>
+                                    </a>
+                                    <a href="{{ url_for('division_equipment') }}" class="action-card">
+                                        <div class="action-icon">
+                                            <i class="fas fa-tools"></i>
+                                        </div>
+                                        <h6>Equipment</h6>
+                                        <small class="text-muted">Manage equipment inventory</small>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle profile form submission
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch('/api/division/update-profile', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Profile updated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating profile');
+                });
+            });
+            
+            // Handle password form submission
+            document.getElementById('passwordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const newPassword = document.getElementById('new_password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+                
+                if (newPassword !== confirmPassword) {
+                    alert('New passwords do not match!');
+                    return;
+                }
+                
+                if (newPassword.length < 6) {
+                    alert('Password must be at least 6 characters long!');
+                    return;
+                }
+                
+                const formData = new FormData(this);
+                
+                fetch('/api/division/change-password', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Password changed successfully!');
+                        document.getElementById('passwordForm').reset();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error changing password');
+                });
+            });
+            
+            // Phone number validation
+            document.getElementById('phone').addEventListener('input', function() {
+                const phone = this.value;
+                if (phone.length === 10 && /^\d+$/.test(phone)) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (phone.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+            
+            // Email validation
+            document.getElementById('email').addEventListener('input', function() {
+                const email = this.value;
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (emailRegex.test(email)) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (email.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

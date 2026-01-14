@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - MSEDCL Worker Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='worker_profile.css') }}" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('worker_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Worker Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('worker_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('worker_attendance') }}">
+                                <i class="fas fa-calendar-check"></i> Attendance
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('worker_tasks') }}">
+                                <i class="fas fa-tasks"></i> My Tasks
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('worker_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('worker_leave') }}">
+                                <i class="fas fa-umbrella-beach"></i> Leave
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('worker_profile') }}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Profile Header -->
+                <div class="profile-header text-center">
+                    <div class="profile-pic">
+                        <i class="fas fa-user-cog"></i>
+                    </div>
+                    <h3>{{ worker_data.name if worker_data else user_name }}</h3>
+                    <p class="mb-0">
+                        {{ worker_data.worker_type if worker_data and worker_data.worker_type else 'Worker' }} | 
+                        {{ worker_data.division_name if worker_data and worker_data.division_name else 'MSEDCL' }}
+                    </p>
+                </div>
+
+                <div class="row">
+                    <!-- Left Column - Profile Information -->
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-user me-2"></i>Personal Information
+                            </div>
+                            <div class="card-body">
+                                <form id="profileForm">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Full Name</label>
+                                                <input type="text" class="form-control" id="name" name="name" 
+                                                       value="{{ worker_data.name if worker_data else '' }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="age" class="form-label">Age</label>
+                                                <input type="number" class="form-control" id="age" name="age" 
+                                                       value="{{ worker_data.age if worker_data and worker_data.age else '' }}" 
+                                                       min="18" max="65">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone_no" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone_no" name="phone_no" 
+                                               value="{{ worker_data.phone_no if worker_data else '' }}" 
+                                               pattern="[0-9]{10}" required>
+                                        <div class="form-text">10-digit phone number</div>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="address" class="form-label">Address</label>
+                                        <textarea class="form-control" id="address" name="address" rows="3">{{ worker_data.address if worker_data else '' }}</textarea>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="skill_sets" class="form-label">Skill Sets</label>
+                                        <input type="text" class="form-control" id="skill_sets" name="skill_sets" 
+                                               value="{{ worker_data.skill_sets if worker_data else '' }}"
+                                               placeholder="e.g., Electrical Repair, Transformer Maintenance, Safety Inspection">
+                                    </div>
+                                    
+                                    <div class="alert alert-info">
+                                        <small>
+                                            <i class="fas fa-info-circle me-1"></i>
+                                            Profile updates will be logged for audit purposes.
+                                        </small>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-msedcl">
+                                        <i class="fas fa-save me-2"></i>Update Profile
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Work Information -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <i class="fas fa-briefcase me-2"></i>Work Information
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Worker ID:</strong><br>
+                                        <span class="text-muted">{{ worker_data.worker_id if worker_data else 'N/A' }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Worker Type:</strong><br>
+                                        <span class="text-muted">{{ worker_data.worker_type if worker_data and worker_data.worker_type else 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Division:</strong><br>
+                                        <span class="text-muted">{{ worker_data.division_name if worker_data and worker_data.division_name else 'N/A' }}</span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Availability:</strong><br>
+                                        <span class="text-muted">{{ worker_data.availability if worker_data and worker_data.availability else 'Available' }}</span>
+                                    </div>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <strong>Task Status:</strong><br>
+                                        <span class="badge {% if worker_data and worker_data.current_task_status == 'Active' %}bg-success{% else %}bg-secondary{% endif %}">
+                                            {{ worker_data.current_task_status if worker_data and worker_data.current_task_status else 'Inactive' }}
+                                        </span>
+                                    </div>
+                                    <div class="col-6">
+                                        <strong>Account Status:</strong><br>
+                                        <span class="badge {% if worker_data and worker_data.is_active %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ 'Active' if worker_data and worker_data.is_active else 'Inactive' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column - Audit Log -->
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="fas fa-history me-2"></i>Recent Activity Log
+                            </div>
+                            <div class="card-body">
+                                {% if audit_logs %}
+                                <div class="audit-log">
+                                    {% for log in audit_logs %}
+                                    <div class="log-item">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="mb-1">{{ log.action_type }}</h6>
+                                                <p class="mb-1 text-muted">{{ log.description }}</p>
+                                            </div>
+                                            <small class="text-muted">
+                                                {{ log.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                {% else %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-history fa-3x text-muted mb-3"></i>
+                                    <h5 class="text-muted">No Activity Logs</h5>
+                                    <p class="text-muted">Your recent activities will appear here.</p>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <i class="fas fa-chart-bar me-2"></i>Profile Completion
+                            </div>
+                            <div class="card-body">
+                                {% set completion_rate = 0 %}
+                                {% if worker_data %}
+                                    {% set filled_fields = 0 %}
+                                    {% set total_fields = 5 %}
+                                    
+                                    {% if worker_data.name %} {% set filled_fields = filled_fields + 1 %} {% endif %}
+                                    {% if worker_data.age %} {% set filled_fields = filled_fields + 1 %} {% endif %}
+                                    {% if worker_data.phone_no %} {% set filled_fields = filled_fields + 1 %} {% endif %}
+                                    {% if worker_data.address %} {% set filled_fields = filled_fields + 1 %} {% endif %}
+                                    {% if worker_data.skill_sets %} {% set filled_fields = filled_fields + 1 %} {% endif %}
+                                    
+                                    {% set completion_rate = (filled_fields / total_fields * 100)|int %}
+                                {% endif %}
+                                
+                                <div class="text-center">
+                                    <div class="mb-3">
+                                        <h2 class="completion-rate-{{ completion_rate }}">{{ completion_rate }}%</h2>
+                                        <p class="text-muted">Profile Complete</p>
+                                    </div>
+                                    <div class="progress profile-progress">
+                                        <div class="progress-bar" 
+                                             data-width="{{ completion_rate }}"
+                                             role="progressbar" 
+                                             aria-valuenow="{{ completion_rate }}" 
+                                             aria-valuemin="0" 
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <h6>Complete your profile:</h6>
+                                    <ul class="list-unstyled">
+                                        <li>
+                                            <i class="fas fa-{% if worker_data and worker_data.name %}check text-success{% else %}times text-danger{% endif %} me-2"></i>
+                                            Full Name
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-{% if worker_data and worker_data.age %}check text-success{% else %}times text-danger{% endif %} me-2"></i>
+                                            Age
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-{% if worker_data and worker_data.phone_no %}check text-success{% else %}times text-danger{% endif %} me-2"></i>
+                                            Phone Number
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-{% if worker_data and worker_data.address %}check text-success{% else %}times text-danger{% endif %} me-2"></i>
+                                            Address
+                                        </li>
+                                        <li>
+                                            <i class="fas fa-{% if worker_data and worker_data.skill_sets %}check text-success{% else %}times text-danger{% endif %} me-2"></i>
+                                            Skill Sets
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set progress bar width from data attribute
+            const progressBars = document.querySelectorAll('.progress-bar[data-width]');
+            progressBars.forEach(bar => {
+                const width = bar.getAttribute('data-width');
+                bar.style.width = width + '%';
+            });
+            
+            // Handle profile form submission
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch('/api/update-worker-profile', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Profile updated successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating profile');
+                });
+            });
+            
+            // Phone number validation
+            document.getElementById('phone_no').addEventListener('input', function() {
+                const phone = this.value;
+                if (phone.length === 10 && /^\d+$/.test(phone)) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (phone.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+            
+            // Age validation
+            document.getElementById('age').addEventListener('input', function() {
+                const age = parseInt(this.value);
+                if (age >= 18 && age <= 65) {
+                    this.classList.remove('is-invalid');
+                    this.classList.add('is-valid');
+                } else {
+                    this.classList.remove('is-valid');
+                    if (this.value.length > 0) {
+                        this.classList.add('is-invalid');
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

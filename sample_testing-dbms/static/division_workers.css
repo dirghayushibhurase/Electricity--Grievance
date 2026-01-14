@@ -1,0 +1,244 @@
+/* Division Workers Specific Styles */
+
+.worker-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.worker-stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid #d32f2f;
+    transition: transform 0.3s ease;
+}
+
+.worker-stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.worker-stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #d32f2f;
+    display: block;
+}
+
+.worker-stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.worker-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.worker-performance-container {
+    width: 100%;
+}
+
+.worker-performance-bar {
+    height: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    background-color: #e9ecef;
+    position: relative;
+}
+
+.worker-performance-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+.performance-excellent {
+    background-color: #28a745;
+}
+
+.performance-good {
+    background-color: #ffc107;
+}
+
+.performance-poor {
+    background-color: #dc3545;
+}
+
+.worker-skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+}
+
+.skill-tag {
+    background-color: #e9ecef;
+    color: #495057;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    border: 1px solid #dee2e6;
+}
+
+.worker-availability-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.worker-details-section {
+    margin-bottom: 1.5rem;
+}
+
+.worker-details-section h6 {
+    color: #495057;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.worker-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.worker-info-item {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 3px solid #d32f2f;
+}
+
+.worker-info-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.9rem;
+}
+
+.worker-info-value {
+    color: #212529;
+    margin-top: 0.3rem;
+}
+
+/* Worker type specific colors */
+.worker-type-technician {
+    background-color: #007bff !important;
+    color: white !important;
+}
+
+.worker-type-inspector {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+.worker-type-supervisor {
+    background-color: #ffc107 !important;
+    color: black !important;
+}
+
+/* Worker availability specific colors */
+.worker-availability-available {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.worker-availability-on-task {
+    background-color: #ffc107 !important;
+    color: black !important;
+}
+
+.worker-availability-sick-leave {
+    background-color: #dc3545 !important;
+    color: white !important;
+}
+
+.worker-availability-on-holiday {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+.worker-availability-other {
+    background-color: #6c757d !important;
+    color: white !important;
+}
+
+/* Modal specific styles */
+.worker-form-section {
+    margin-bottom: 1.5rem;
+}
+
+.worker-form-section h6 {
+    color: #495057;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+}
+
+.worker-address-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+/* Responsive adjustments for worker table */
+@media (max-width: 768px) {
+    .worker-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .worker-actions {
+        flex-direction: column;
+    }
+    
+    .worker-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .worker-performance-fill {
+        font-size: 0.6rem;
+    }
+}
+
+/* Hover effects for worker cards */
+.worker-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.worker-card:hover {
+    border-color: #d32f2f;
+    box-shadow: 0 4px 15px rgba(211, 47, 47, 0.1);
+}
+
+/* Worker assignment status */
+.assignment-status {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+}
+
+.assignment-available {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.assignment-busy {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.assignment-unavailable {
+    background-color: #f8d7da;
+    color: #721c24;
+}

@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Logs - MSEDCL Division</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='division_styles.css') }}" rel="stylesheet">
+    <style>
+        .logs-container {
+            max-height: 600px;
+            overflow-y: auto;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            background-color: #f8f9fa;
+        }
+        .log-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .log-type {
+            font-weight: 600;
+            color: #495057;
+        }
+        .log-time {
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        .log-details {
+            color: #495057;
+            line-height: 1.5;
+        }
+        .log-details strong {
+            color: #343a40;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: #dc3545;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+        }
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+            background: #c82333;
+        }
+        .stat-card.active {
+            background: #b02a37;
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+        }
+        .stat-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: white;
+        }
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            color: white;
+        }
+        .dynamic-filters-container {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+            display: none;
+        }
+        .dynamic-filters-container.active {
+            display: block;
+        }
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+        .dynamic-filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+            align-items: end;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #dc3545;
+            color: white;
+            border-color: #dc3545;
+        }
+        .nav-tabs .nav-link {
+            color: #495057;
+        }
+        .tab-content {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 1.5rem;
+        }
+        .json-data {
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.875rem;
+        }
+        .btn-msedcl {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        .btn-msedcl:hover {
+            background-color: #c82333;
+            border-color: #bd2130;
+            color: white;
+        }
+        .common-filters {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            border: 1px solid #e9ecef;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('division_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Division Head Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }} | {{ division_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_issues') }}">
+                                <i class="fas fa-exclamation-circle"></i> Issues Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_workers') }}">
+                                <i class="fas fa-users"></i> Workers Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('division_logs') }}">
+                                <i class="fas fa-clipboard-list"></i> System Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile & Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-clipboard-list me-2 text-danger"></i>System Logs & Audit
+                    </h2>
+                    <div class="text-muted">
+                        Division: {{ division_name }}
+                    </div>
+                </div>
+
+                <!-- Log Type Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card active" data-log-type="security">
+                        <span class="stat-number">{{ stats.security_logs }}</span>
+                        <span class="stat-label">Security Logs</span>
+                    </div>
+                    <div class="stat-card" data-log-type="issue">
+                        <span class="stat-number">{{ stats.issue_logs }}</span>
+                        <span class="stat-label">Issue Logs</span>
+                    </div>
+                    <div class="stat-card" data-log-type="user">
+                        <span class="stat-number">{{ stats.user_logs }}</span>
+                        <span class="stat-label">User Activity</span>
+                    </div>
+                    <div class="stat-card" data-log-type="worker">
+                        <span class="stat-number">{{ stats.worker_logs }}</span>
+                        <span class="stat-label">Worker Logs</span>
+                    </div>
+                    <div class="stat-card" data-log-type="equipment">
+                        <span class="stat-number">{{ stats.equipment_logs }}</span>
+                        <span class="stat-label">Equipment Logs</span>
+                    </div>
+                    <div class="stat-card" data-log-type="all">
+                        <span class="stat-number">{{ stats.total_logs }}</span>
+                        <span class="stat-label">Total Logs</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Filters Container (Initially Hidden) -->
+                <div id="dynamicFiltersContainer" class="dynamic-filters-container">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="mb-0 text-danger" id="filtersTitle">Security Logs Filters</h5>
+                        <div>
+                            <button class="btn btn-outline-secondary btn-sm me-2" onclick="clearFilters()">
+                                <i class="fas fa-times me-1"></i> Clear Filters
+                            </button>
+                            <button class="btn btn-msedcl btn-sm" onclick="applyLogFilters()">
+                                <i class="fas fa-filter me-1"></i> Apply Filters
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic Filters Row -->
+                    <div id="dynamicFilters" class="dynamic-filters-row">
+                        <!-- Filters will be loaded here dynamically -->
+                    </div>
+                    
+                    <!-- Common Filters -->
+                    <div class="common-filters">
+                        <h6 class="mb-3">Common Filters</h6>
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label class="form-label">Date From</label>
+                                <input type="date" class="form-control" id="dateFromFilter">
+                            </div>
+                            <div class="filter-group">
+                                <label class="form-label">Date To</label>
+                                <input type="date" class="form-control" id="dateToFilter">
+                            </div>
+                            <div class="filter-group">
+                                <label class="form-label">Search</label>
+                                <input type="text" class="form-control" id="searchFilter" placeholder="Search in logs...">
+                            </div>
+                            <div class="export-buttons">
+                                <button class="btn btn-outline-primary" onclick="exportLogs()">
+                                    <i class="fas fa-download me-1"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Tabs -->
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="logsTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">
+                                    <i class="fas fa-shield-alt me-1"></i> Security Logs ({{ stats.security_logs }})
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="user-tab" data-bs-toggle="tab" data-bs-target="#user" type="button" role="tab">
+                                    <i class="fas fa-user me-1"></i> User Activity ({{ stats.user_logs }})
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="issue-tab" data-bs-toggle="tab" data-bs-target="#issue" type="button" role="tab">
+                                    <i class="fas fa-exclamation-circle me-1"></i> Issue Audit ({{ stats.issue_logs }})
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="worker-tab" data-bs-toggle="tab" data-bs-target="#worker" type="button" role="tab">
+                                    <i class="fas fa-users me-1"></i> Worker Activity ({{ stats.worker_logs }})
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="equipment-tab" data-bs-toggle="tab" data-bs-target="#equipment" type="button" role="tab">
+                                    <i class="fas fa-tools me-1"></i> Equipment Logs ({{ stats.equipment_logs }})
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="logsTabContent">
+                            <!-- Security Logs Tab -->
+                            <div class="tab-pane fade show active" id="security" role="tabpanel">
+                                <div class="logs-container">
+                                    {% if security_logs %}
+                                        {% for log in security_logs %}
+                                        <div class="log-item security">
+                                            <div class="log-header">
+                                                <span class="log-type">
+                                                    <i class="fas fa-exclamation-triangle me-1 text-warning"></i>
+                                                    Failed Login Attempt
+                                                </span>
+                                                <span class="log-time">{{ log.attempted_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                            </div>
+                                            <div class="log-details">
+                                                <strong>Email:</strong> {{ log.email }}<br>
+                                                <strong>IP Address:</strong> {{ log.ip_address }}<br>
+                                                {% if log.user_agent %}
+                                                <strong>User Agent:</strong> {{ log.user_agent[:50] }}...<br>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-shield-alt fa-3x mb-3"></i>
+                                            <p>No security logs found for your division</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- User Activity Tab -->
+                            <div class="tab-pane fade" id="user" role="tabpanel">
+                                <div class="logs-container">
+                                    {% if user_activity_logs %}
+                                        {% for log in user_activity_logs %}
+                                        <div class="log-item user">
+                                            <div class="log-header">
+                                                <span class="log-type">
+                                                    <i class="fas fa-user me-1 text-primary"></i>
+                                                    {{ log.action_type|replace('_', ' ')|title }}
+                                                </span>
+                                                <span class="log-time">{{ log.changed_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                            </div>
+                                            <div class="log-details">
+                                                <strong>User:</strong> {{ log.user_name }} (ID: {{ log.user_id }})<br>
+                                                {% if log.old_values %}
+                                                <strong>Changes:</strong><br>
+                                                <div class="json-data">
+                                                    <strong>Old:</strong> {{ log.old_values }}<br>
+                                                    <strong>New:</strong> {{ log.new_values }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-user fa-3x mb-3"></i>
+                                            <p>No user activity logs found for your division</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Issue Audit Tab -->
+                            <div class="tab-pane fade" id="issue" role="tabpanel">
+                                <div class="logs-container">
+                                    {% if issue_audit_logs %}
+                                        {% for log in issue_audit_logs %}
+                                        <div class="log-item audit">
+                                            <div class="log-header">
+                                                <span class="log-type">
+                                                    <i class="fas fa-exclamation-circle me-1 text-info"></i>
+                                                    {{ log.action_type|replace('_', ' ')|title }}
+                                                </span>
+                                                <span class="log-time">{{ log.changed_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                            </div>
+                                            <div class="log-details">
+                                                <strong>Issue:</strong> #{{ log.issue_id }} - {{ log.issue_title }}<br>
+                                                <strong>Changed By:</strong> {{ log.changed_by_name }}<br>
+                                                {% if log.old_values %}
+                                                <strong>Changes:</strong><br>
+                                                <div class="json-data">
+                                                    <strong>Old:</strong> {{ log.old_values }}<br>
+                                                    <strong>New:</strong> {{ log.new_values }}
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-exclamation-circle fa-3x mb-3"></i>
+                                            <p>No issue audit logs found for your division</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Worker Activity Tab -->
+                            <div class="tab-pane fade" id="worker" role="tabpanel">
+                                <div class="logs-container">
+                                    {% if worker_activity_logs %}
+                                        {% for log in worker_activity_logs %}
+                                        <div class="log-item worker">
+                                            <div class="log-header">
+                                                <span class="log-type">
+                                                    <i class="fas fa-user-cog me-1 text-success"></i>
+                                                    {{ log.action_type|title }}
+                                                </span>
+                                                <span class="log-time">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                            </div>
+                                            <div class="log-details">
+                                                <strong>Worker:</strong> {{ log.worker_name }}<br>
+                                                <strong>Action:</strong> {{ log.action_type|title }}<br>
+                                                {% if log.description %}
+                                                <strong>Description:</strong> {{ log.description }}<br>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-user-cog fa-3x mb-3"></i>
+                                            <p>No worker activity logs found for your division</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Equipment Logs Tab -->
+                            <div class="tab-pane fade" id="equipment" role="tabpanel">
+                                <div class="logs-container">
+                                    {% if equipment_logs %}
+                                        {% for log in equipment_logs %}
+                                        <div class="log-item equipment">
+                                            <div class="log-header">
+                                                <span class="log-type">
+                                                    <i class="fas fa-tools me-1 text-warning"></i>
+                                                    {{ log.action_type|title }}
+                                                </span>
+                                                <span class="log-time">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                                            </div>
+                                            <div class="log-details">
+                                                <strong>Equipment:</strong> {{ log.name_of_equipment }} ({{ log.serial_no }})<br>
+                                                {% if log.worker_name %}
+                                                <strong>Worker:</strong> {{ log.worker_name }}<br>
+                                                {% endif %}
+                                                {% if log.notes %}
+                                                <strong>Notes:</strong> {{ log.notes }}<br>
+                                                {% endif %}
+                                                {% if log.head_name %}
+                                                <strong>Action By:</strong> {{ log.head_name }}<br>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <div class="text-center text-muted py-4">
+                                            <i class="fas fa-tools fa-3x mb-3"></i>
+                                            <p>No equipment logs found for your division</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Current active log type
+        let currentLogType = 'security';
+
+        // Dynamic filter templates
+        const filterTemplates = {
+            security: `
+                <div class="filter-group">
+                    <label class="form-label">Email</label>
+                    <input type="text" class="form-control" id="emailFilter" placeholder="Filter by email...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">IP Address</label>
+                    <input type="text" class="form-control" id="ipFilter" placeholder="Filter by IP...">
+                </div>
+            `,
+            user: `
+                <div class="filter-group">
+                    <label class="form-label">User Name</label>
+                    <input type="text" class="form-control" id="userNameFilter" placeholder="Filter by user name...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Action Type</label>
+                    <select class="form-select" id="actionTypeFilter">
+                        <option value="">All Actions</option>
+                        <option value="PROFILE_UPDATED">Profile Updated</option>
+                        <option value="PASSWORD_CHANGED">Password Changed</option>
+                        <option value="EMAIL_CHANGED">Email Changed</option>
+                    </select>
+                </div>
+            `,
+            issue: `
+                <div class="filter-group">
+                    <label class="form-label">Issue ID</label>
+                    <input type="number" class="form-control" id="issueIdFilter" placeholder="Filter by issue ID...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Action Type</label>
+                    <select class="form-select" id="issueActionFilter">
+                        <option value="">All Actions</option>
+                        <option value="CREATED">Created</option>
+                        <option value="UPDATED">Updated</option>
+                        <option value="VIEWED">Viewed</option>
+                        <option value="STATUS_CHANGED">Status Changed</option>
+                    </select>
+                </div>
+            `,
+            worker: `
+                <div class="filter-group">
+                    <label class="form-label">Worker Name</label>
+                    <input type="text" class="form-control" id="workerNameFilter" placeholder="Filter by worker name...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Action Type</label>
+                    <select class="form-select" id="workerActionFilter">
+                        <option value="">All Actions</option>
+                        <option value="Profile Update">Profile Update</option>
+                        <option value="Equipment Request">Equipment Request</option>
+                        <option value="Attendance Marked">Attendance Marked</option>
+                        <option value="Leave Applied">Leave Applied</option>
+                        <option value="Issue Status Updated">Issue Status Updated</option>
+                    </select>
+                </div>
+            `,
+            equipment: `
+                <div class="filter-group">
+                    <label class="form-label">Equipment Name</label>
+                    <input type="text" class="form-control" id="equipmentNameFilter" placeholder="Filter by equipment name...">
+                </div>
+                <div class="filter-group">
+                    <label class="form-label">Action Type</label>
+                    <select class="form-select" id="equipmentActionFilter">
+                        <option value="">All Actions</option>
+                        <option value="requested">Requested</option>
+                        <option value="issued">Issued</option>
+                        <option value="returned">Returned</option>
+                        <option value="rejected">Rejected</option>
+                        <option value="added">Added</option>
+                        <option value="updated">Updated</option>
+                    </select>
+                </div>
+            `,
+            all: `
+                <div class="filter-group">
+                    <label class="form-label">Log Type</label>
+                    <select class="form-select" id="logTypeFilter">
+                        <option value="">All Logs</option>
+                        <option value="security">Security Logs</option>
+                        <option value="user">User Activity</option>
+                        <option value="issue">Issue Audit</option>
+                        <option value="worker">Worker Activity</option>
+                        <option value="equipment">Equipment Logs</option>
+                    </select>
+                </div>
+            `
+        };
+
+        // Filter titles
+        const filterTitles = {
+            security: 'Security Logs Filters',
+            user: 'User Activity Filters',
+            issue: 'Issue Audit Filters',
+            worker: 'Worker Activity Filters',
+            equipment: 'Equipment Logs Filters',
+            all: 'All Logs Filters'
+        };
+
+        function showLogType(type) {
+            currentLogType = type;
+            
+            // Update active card
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            event.currentTarget.classList.add('active');
+            
+            // Show filters container
+            const filtersContainer = document.getElementById('dynamicFiltersContainer');
+            filtersContainer.classList.add('active');
+            
+            // Update filters title
+            document.getElementById('filtersTitle').textContent = filterTitles[type] || 'Logs Filters';
+            
+            // Load dynamic filters
+            const dynamicFilters = document.getElementById('dynamicFilters');
+            dynamicFilters.innerHTML = filterTemplates[type] || filterTemplates.security;
+            
+            // Switch to corresponding tab
+            const tab = document.getElementById(`${type}-tab`);
+            if (tab) {
+                const tabInstance = new bootstrap.Tab(tab);
+                tabInstance.show();
+            }
+        }
+
+        function clearFilters() {
+            // Clear all filter inputs
+            document.getElementById('dateFromFilter').value = '';
+            document.getElementById('dateToFilter').value = '';
+            document.getElementById('searchFilter').value = '';
+            
+            // Clear dynamic filters based on current type
+            const dynamicFilters = document.getElementById('dynamicFilters');
+            const inputs = dynamicFilters.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.type === 'text' || input.type === 'number') {
+                    input.value = '';
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                }
+            });
+            
+            // Reload page without filters
+            window.location.href = window.location.pathname + '?log_type=' + currentLogType;
+        }
+
+        function applyLogFilters() {
+            const dateFrom = document.getElementById('dateFromFilter').value;
+            const dateTo = document.getElementById('dateToFilter').value;
+            const search = document.getElementById('searchFilter').value;
+            
+            let url = `?log_type=${currentLogType}&date_from=${dateFrom}&date_to=${dateTo}&search=${encodeURIComponent(search)}`;
+            
+            // Add dynamic filter values based on current log type
+            if (currentLogType === 'security') {
+                const emailFilter = document.getElementById('emailFilter');
+                const ipFilter = document.getElementById('ipFilter');
+                if (emailFilter && emailFilter.value) url += `&email=${encodeURIComponent(emailFilter.value)}`;
+                if (ipFilter && ipFilter.value) url += `&ip=${encodeURIComponent(ipFilter.value)}`;
+            }
+            else if (currentLogType === 'user') {
+                const userNameFilter = document.getElementById('userNameFilter');
+                const actionTypeFilter = document.getElementById('actionTypeFilter');
+                if (userNameFilter && userNameFilter.value) url += `&user_name=${encodeURIComponent(userNameFilter.value)}`;
+                if (actionTypeFilter && actionTypeFilter.value) url += `&action_type=${encodeURIComponent(actionTypeFilter.value)}`;
+            }
+            else if (currentLogType === 'issue') {
+                const issueIdFilter = document.getElementById('issueIdFilter');
+                const issueActionFilter = document.getElementById('issueActionFilter');
+                if (issueIdFilter && issueIdFilter.value) url += `&issue_id=${encodeURIComponent(issueIdFilter.value)}`;
+                if (issueActionFilter && issueActionFilter.value) url += `&action_type=${encodeURIComponent(issueActionFilter.value)}`;
+            }
+            else if (currentLogType === 'worker') {
+                const workerNameFilter = document.getElementById('workerNameFilter');
+                const workerActionFilter = document.getElementById('workerActionFilter');
+                if (workerNameFilter && workerNameFilter.value) url += `&worker_name=${encodeURIComponent(workerNameFilter.value)}`;
+                if (workerActionFilter && workerActionFilter.value) url += `&action_type=${encodeURIComponent(workerActionFilter.value)}`;
+            }
+            else if (currentLogType === 'equipment') {
+                const equipmentNameFilter = document.getElementById('equipmentNameFilter');
+                const equipmentActionFilter = document.getElementById('equipmentActionFilter');
+                if (equipmentNameFilter && equipmentNameFilter.value) url += `&equipment_name=${encodeURIComponent(equipmentNameFilter.value)}`;
+                if (equipmentActionFilter && equipmentActionFilter.value) url += `&action_type=${encodeURIComponent(equipmentActionFilter.value)}`;
+            }
+            else if (currentLogType === 'all') {
+                const logTypeFilter = document.getElementById('logTypeFilter');
+                if (logTypeFilter && logTypeFilter.value) url += `&filter_type=${encodeURIComponent(logTypeFilter.value)}`;
+            }
+            
+            window.location.href = url;
+        }
+
+        function exportLogs() {
+            const dateFrom = document.getElementById('dateFromFilter').value;
+            const dateTo = document.getElementById('dateToFilter').value;
+            
+            let url = `/api/division/export-logs?log_type=${currentLogType}&date_from=${dateFrom}&date_to=${dateTo}`;
+            window.location.href = url;
+        }
+
+        // Initialize from URL parameters and set up click handlers
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            document.getElementById('dateFromFilter').value = urlParams.get('date_from') || '';
+            document.getElementById('dateToFilter').value = urlParams.get('date_to') || '';
+            document.getElementById('searchFilter').value = urlParams.get('search') || '';
+            
+            // Set initial log type
+            const initialLogType = urlParams.get('log_type') || 'security';
+            currentLogType = initialLogType;
+            
+            // Activate the correct card and show filters
+            document.querySelectorAll('.stat-card').forEach(card => {
+                if (card.getAttribute('data-log-type') === initialLogType) {
+                    card.classList.add('active');
+                    // Show filters for the initial type
+                    const filtersContainer = document.getElementById('dynamicFiltersContainer');
+                    filtersContainer.classList.add('active');
+                    document.getElementById('filtersTitle').textContent = filterTitles[initialLogType] || 'Logs Filters';
+                    
+                    // Load initial filters
+                    const dynamicFilters = document.getElementById('dynamicFilters');
+                    dynamicFilters.innerHTML = filterTemplates[initialLogType] || filterTemplates.security;
+                }
+            });
+            
+            // Set up click handlers for all stat cards
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const logType = this.getAttribute('data-log-type');
+                    showLogType(logType);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

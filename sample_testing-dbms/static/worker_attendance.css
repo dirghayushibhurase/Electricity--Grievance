@@ -1,0 +1,128 @@
+:root {
+    --msedcl-red: #d32f2f;
+    --msedcl-dark: #b71c1c;
+}
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+}
+
+.sidebar {
+    background: white;
+    min-height: calc(100vh - 76px);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.sidebar .nav-link {
+    color: #333;
+    padding: 12px 20px;
+    margin: 5px 0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: var(--msedcl-red);
+    color: white;
+}
+
+.main-content {
+    padding: 20px;
+    background: #f8f9fa;
+    min-height: calc(100vh - 76px);
+}
+
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+    color: white;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 15px 20px;
+    font-weight: 600;
+}
+
+.btn-msedcl {
+    background: var(--msedcl-red);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-msedcl:hover {
+    background: var(--msedcl-dark);
+    color: white;
+}
+
+.attendance-form {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.stat-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border-left: 4px solid var(--msedcl-red);
+}
+
+.stat-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: var(--msedcl-red);
+    display: block;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.attendance-status-present { 
+    background-color: #d4edda; 
+    border-left: 4px solid #28a745; 
+}
+
+.attendance-status-absent { 
+    background-color: #f8d7da; 
+    border-left: 4px solid #dc3545; 
+}
+
+.attendance-status-leave { 
+    background-color: #fff3cd; 
+    border-left: 4px solid #ffc107; 
+}
+
+.bg-success { background-color: #28a745 !important; }
+.bg-danger { background-color: #dc3545 !important; }
+.bg-warning { background-color: #ffc107 !important; }
+
+.attendance-progress {
+    height: 25px;
+}
+

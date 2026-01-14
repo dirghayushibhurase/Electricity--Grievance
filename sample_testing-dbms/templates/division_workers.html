@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workers Management - MSEDCL Division</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .main-content {
+            padding: 20px;
+            background: #f8f9fa;
+            min-height: calc(100vh - 76px);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .btn-msedcl {
+            background: var(--msedcl-red);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-msedcl:hover {
+            background: var(--msedcl-dark);
+            color: white;
+        }
+        
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid var(--msedcl-red);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--msedcl-red);
+            display: block;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: block;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr auto auto;
+            gap: 1rem;
+            align-items: end;
+        }
+        
+        .filter-group {
+            margin-bottom: 0;
+        }
+        
+        .export-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        /* Badge Styles */
+        .worker-type-technician { background-color: #17a2b8; }
+        .worker-type-inspector { background-color: #28a745; }
+        .worker-type-supervisor { background-color: #6f42c1; }
+        
+        .worker-availability-available { background-color: #28a745; }
+        .worker-availability-on-task { background-color: #ffc107; color: #000; }
+        .worker-availability-sick-leave { background-color: #6c757d; }
+        .worker-availability-on-holiday { background-color: #17a2b8; }
+        .worker-availability-other { background-color: #6c757d; }
+        
+        /* Inactive worker styling */
+        .worker-inactive {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+        }
+        
+        .worker-inactive td {
+            opacity: 0.6;
+        }
+        
+        .worker-inactive .badge {
+            background-color: #6c757d !important;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('division_dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Division Head Portal
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> {{ user_name }} | {{ division_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_issues') }}">
+                                <i class="fas fa-exclamation-circle"></i> Issues Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="{{ url_for('division_workers') }}">
+                                <i class="fas fa-users"></i> Workers Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_logs') }}">
+                                <i class="fas fa-clipboard-list"></i> System Logs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_equipment') }}">
+                                <i class="fas fa-tools"></i> Equipment
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('division_profile') }}">
+                                <i class="fas fa-user-cog"></i> Profile & Settings
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <!-- Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-users me-2 text-danger"></i>Workers Management
+                    </h2>
+                    <button class="btn btn-msedcl" data-bs-toggle="modal" data-bs-target="#addWorkerModal">
+                        <i class="fas fa-user-plus me-1"></i> Add New Worker
+                    </button>
+                </div>
+
+                <!-- Worker Stats -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.total_workers }}</span>
+                        <span class="stat-label">Total Workers</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.available_workers }}</span>
+                        <span class="stat-label">Available</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.on_task_workers }}</span>
+                        <span class="stat-label">On Task</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.technicians }}</span>
+                        <span class="stat-label">Technicians</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.inspectors }}</span>
+                        <span class="stat-label">Inspectors</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.supervisors }}</span>
+                        <span class="stat-label">Supervisors</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-number">{{ stats.inactive_workers }}</span>
+                        <span class="stat-label">Inactive</span>
+                    </div>
+                </div>
+
+                <!-- Filter Section -->
+                <div class="filter-section">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="form-label">Worker Type</label>
+                            <select class="form-select" id="workerTypeFilter">
+                                <option value="">All Types</option>
+                                <option value="Technician">Technician</option>
+                                <option value="Inspector">Inspector</option>
+                                <option value="Supervisor">Supervisor</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Availability</label>
+                            <select class="form-select" id="availabilityFilter">
+                                <option value="">All Status</option>
+                                <option value="Available">Available</option>
+                                <option value="On Task">On Task</option>
+                                <option value="Sick Leave">Sick Leave</option>
+                                <option value="On Holiday">On Holiday</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="form-label">Worker Status</label>
+                            <select class="form-select" id="statusFilter">
+                                <option value="active">Active Only</option>
+                                <option value="inactive">Inactive Only</option>
+                                <option value="all">All Workers</option>
+                            </select>
+                        </div>
+                        <div class="export-buttons">
+                            <button class="btn btn-outline-secondary" onclick="clearFilters()">
+                                <i class="fas fa-times me-1"></i> Clear
+                            </button>
+                            <button class="btn btn-outline-primary" onclick="exportToCSV('workersTable', 'division_workers.csv')">
+                                <i class="fas fa-download me-1"></i> Export
+                            </button>
+                            <button class="btn btn-msedcl" onclick="applyFilters()">
+                                <i class="fas fa-filter me-1"></i> Apply
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workers Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-list me-2"></i>Division Workers
+                        </div>
+                        <div class="text-muted">
+                            Showing {{ workers|length }} workers
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover" id="workersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Worker ID</th>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>Contact</th>
+                                        <th>Availability</th>
+                                        <th>Current Tasks</th>
+                                        <th>Completed Tasks</th>
+                                        <th>Skill Sets</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for worker in workers %}
+                                    <tr data-worker-id="{{ worker.worker_id }}" class="{% if not worker.is_active %}worker-inactive{% endif %}">
+                                        <td>#{{ worker.worker_id }}</td>
+                                        <td>
+                                            <div class="fw-bold">{{ worker.name }}</div>
+                                            <small class="text-muted">Age: {{ worker.age or 'N/A' }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge worker-type-{{ worker.worker_type|lower }}">
+                                                {{ worker.worker_type }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div>{{ worker.phone_no }}</div>
+                                            <small class="text-muted">{{ worker.email }}</small>
+                                        </td>
+                                        <td>
+                                            <span class="badge worker-availability-{{ worker.availability|lower|replace(' ', '-') }}">
+                                                {{ worker.availability }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold">{{ worker.total_tasks }}</span> tasks
+                                        </td>
+                                        <td>
+                                            <span class="fw-bold text-success">{{ worker.completed_tasks_count }}</span> completed
+                                        </td>
+                                        <td>
+                                            <small>{{ worker.skill_sets or 'No skills specified' }}</small>
+                                        </td>
+                                        <td>
+                                            {% if worker.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm worker-actions">
+                                                <button class="btn btn-info view-worker-btn" 
+                                                        data-worker-id="{{ worker.worker_id }}"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#workerDetailsModal">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                {% if worker.is_active %}
+                                                <button class="btn btn-warning edit-worker-btn" 
+                                                        data-worker-id="{{ worker.worker_id }}"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#editWorkerModal">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="btn btn-danger remove-worker-btn" 
+                                                        data-worker-id="{{ worker.worker_id }}"
+                                                        data-worker-name="{{ worker.name }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                                {% else %}
+                                                <button class="btn btn-outline-secondary" disabled>
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary" disabled>
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Worker Modal -->
+    <div class="modal fade" id="addWorkerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Worker</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addWorkerForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" name="phone_no" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" class="form-control" name="age" min="18" max="65">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Worker Type *</label>
+                                    <select class="form-select" name="worker_type" required>
+                                        <option value="">Select Type</option>
+                                        <option value="Technician">Technician</option>
+                                        <option value="Inspector">Inspector</option>
+                                        <option value="Supervisor">Supervisor</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Skill Sets</label>
+                                    <input type="text" class="form-control" name="skill_sets" placeholder="e.g., Transformer repair, Line maintenance">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" name="address" rows="3"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Password *</label>
+                                    <input type="password" class="form-control" name="password" required>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-msedcl" onclick="addWorker()">Add Worker</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Worker Modal -->
+    <div class="modal fade" id="editWorkerModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Worker Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editWorkerForm">
+                        <input type="hidden" id="editWorkerId" name="worker_id">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="editName" name="name" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="editEmail" name="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Phone Number *</label>
+                                    <input type="tel" class="form-control" id="editPhone" name="phone_no" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Age</label>
+                                    <input type="number" class="form-control" id="editAge" name="age" min="18" max="65">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Worker Type *</label>
+                                    <select class="form-select" id="editWorkerType" name="worker_type" required>
+                                        <option value="Technician">Technician</option>
+                                        <option value="Inspector">Inspector</option>
+                                        <option value="Supervisor">Supervisor</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Availability *</label>
+                                    <select class="form-select" id="editAvailability" name="availability" required>
+                                        <option value="Available">Available</option>
+                                        <option value="On Task">On Task</option>
+                                        <option value="Sick Leave">Sick Leave</option>
+                                        <option value="On Holiday">On Holiday</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Skill Sets</label>
+                                    <input type="text" class="form-control" id="editSkills" name="skill_sets" placeholder="e.g., Transformer repair, Line maintenance">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" id="editAddress" name="address" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-msedcl" onclick="updateWorker()">Update Worker</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Worker Details Modal -->
+    <div class="modal fade" id="workerDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Worker Details - #<span id="detailWorkerId"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="workerDetailsContent">
+                    <!-- Details will be loaded via AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Add Worker Function - FIXED: No jQuery, proper Bootstrap modal closing
+        function addWorker() {
+            const formData = new FormData(document.getElementById('addWorkerForm'));
+            
+            fetch('/api/division/add-worker', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Worker added successfully!');
+                    // Close modal using Bootstrap's native method
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('addWorkerModal'));
+                    modal.hide();
+                    // Refresh the page
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+
+        // Remove Worker
+        document.querySelectorAll('.remove-worker-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const workerId = this.getAttribute('data-worker-id');
+                const workerName = this.getAttribute('data-worker-name');
+                
+                if (confirm(`Are you sure you want to remove worker ${workerName}? They will be marked as inactive but their records will be preserved.`)) {
+                    fetch('/api/division/remove-worker', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `worker_id=${workerId}`
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Worker removed successfully!');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.error);
+                        }
+                    })
+                    .catch(error => {
+                        alert('Error: ' + error);
+                    });
+                }
+            });
+        });
+
+        // View worker details
+        document.querySelectorAll('.view-worker-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const workerId = this.getAttribute('data-worker-id');
+                document.getElementById('detailWorkerId').textContent = workerId;
+                
+                fetch(`/api/division/worker-details/${workerId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            document.getElementById('workerDetailsContent').innerHTML = data.html;
+                        } else {
+                            document.getElementById('workerDetailsContent').innerHTML = '<p class="text-danger">Error loading worker details: ' + data.error + '</p>';
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('workerDetailsContent').innerHTML = '<p class="text-danger">Error loading worker details</p>';
+                    });
+            });
+        });
+
+        // Edit worker functionality
+        document.querySelectorAll('.edit-worker-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const workerId = this.getAttribute('data-worker-id');
+                const workerRow = document.querySelector(`[data-worker-id="${workerId}"]`);
+                
+                if (workerRow) {
+                    document.getElementById('editWorkerId').value = workerId;
+                    document.getElementById('editName').value = workerRow.querySelector('.fw-bold').textContent;
+                    document.getElementById('editEmail').value = workerRow.querySelector('td:nth-child(4) small').textContent;
+                    document.getElementById('editPhone').value = workerRow.querySelector('td:nth-child(4) div').textContent;
+                    document.getElementById('editAge').value = workerRow.querySelector('td:nth-child(2) small').textContent.replace('Age: ', '') || '';
+                    document.getElementById('editWorkerType').value = workerRow.querySelector('.badge').textContent.trim();
+                    document.getElementById('editAvailability').value = workerRow.querySelector('td:nth-child(5) .badge').textContent.trim();
+                    document.getElementById('editSkills').value = workerRow.querySelector('td:nth-child(8) small').textContent.trim();
+                }
+            });
+        });
+
+        // Update worker
+        function updateWorker() {
+            const formData = new FormData(document.getElementById('editWorkerForm'));
+            
+            fetch('/api/division/update-worker', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Worker updated successfully!');
+                    // Close modal using Bootstrap's native method
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editWorkerModal'));
+                    modal.hide();
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
+            });
+        }
+
+        // Apply filters
+        function applyFilters() {
+            const type = document.getElementById('workerTypeFilter').value;
+            const availability = document.getElementById('availabilityFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            
+            let url = `?type=${type}&availability=${availability}&status=${status}`;
+            window.location.href = url;
+        }
+
+        // Clear filters
+        function clearFilters() {
+            window.location.href = window.location.pathname;
+        }
+
+        // Export to CSV
+        function exportToCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tr');
+            let csv = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = [];
+                const cols = rows[i].querySelectorAll('td, th');
+                
+                for (let j = 0; j < cols.length; j++) {
+                    let text = cols[j].innerText;
+                    text = text.replace(/View|Edit|Remove/g, '');
+                    row.push(`"${text.trim()}"`);
+                }
+                
+                csv.push(row.join(','));
+            }
+            
+            const csvFile = new Blob([csv.join('\n')], {type: 'text/csv'});
+            const downloadLink = document.createElement('a');
+            downloadLink.download = filename;
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+            downloadLink.style.display = 'none';
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        // Initialize filters from URL parameters
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            document.getElementById('workerTypeFilter').value = urlParams.get('type') || '';
+            document.getElementById('availabilityFilter').value = urlParams.get('availability') || '';
+            document.getElementById('statusFilter').value = urlParams.get('status') || 'active';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Issue - MSEDCL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --msedcl-red: #d32f2f;
+            --msedcl-dark: #b71c1c;
+            --msedcl-light: #f5f5f5;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .nav-link {
+            color: #333;
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover, .sidebar .nav-link.active {
+            background-color: var(--msedcl-red);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+        
+        .main-content {
+            padding: 20px;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--msedcl-red), var(--msedcl-dark));
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            padding: 15px 20px;
+            font-weight: 600;
+        }
+        
+        .btn-msedcl {
+            background: var(--msedcl-red);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-msedcl:hover {
+            background: var(--msedcl-dark);
+            color: white;
+            transform: translateY(-1px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--msedcl-red);
+            box-shadow: 0 0 0 0.2rem rgba(211, 47, 47, 0.25);
+        }
+        
+        .current-status {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+        }
+        
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-resolved { background-color: #d1edff; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-bolt me-2"></i>
+                MSEDCL Grievance System
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i> Welcome, {{ user_name }}
+                </span>
+                <a class="nav-link" href="/logout">
+                    <i class="fas fa-sign-out-alt me-1"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('dashboard') }}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('raise_issue_page') }}">
+                                <i class="fas fa-plus-circle"></i> Raise New Issue
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('track_issues') }}">
+                                <i class="fas fa-list-alt"></i> Track Issues
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ url_for('profile') }}">
+                                <i class="fas fa-user"></i> Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+             <!-- Main Content -->
+<div class="col-md-9 col-lg-10 main-content">
+    <!-- Add this hidden element to reliably pass issue ID to JavaScript -->
+    <div id="issueIdData" data-issue-id="{{ issue.issue_id }}" style="display: none;"></div>
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+            <i class="fas fa-edit me-2 text-danger"></i>Edit Issue #{{ issue.issue_id }}
+        </h2>
+        <!-- Rest of your content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">
+                        <i class="fas fa-edit me-2 text-danger"></i>Edit Issue #{{ issue.issue_id }}
+                    </h2>
+                    <a href="{{ url_for('track_issues') }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Issues
+                    </a>
+                </div>
+
+                <!-- Current Status Alert -->
+                <div class="alert alert-info mb-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Current Status:</strong>
+                            <span class="current-status status-{{ issue.status }} ms-2">
+                                {{ issue.status|upper }}
+                            </span>
+                        </div>
+                        <div>
+                            <small class="text-muted">
+                                Created: {{ issue.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-edit me-2"></i>Edit Issue Details
+                    </div>
+                    <div class="card-body">
+                        <form id="editIssueForm" method="POST" action="/api/update-issue/{{ issue.issue_id }}">
+                            <!-- Basic Information -->
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label">Issue Title *</label>
+                                    <input type="text" class="form-control" name="title" value="{{ issue.title }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Priority Level *</label>
+                                    <select class="form-select" name="priority" required>
+                                        <option value="low" {% if issue.priority == 'low' %}selected{% endif %}>Low - Minor inconvenience</option>
+                                        <option value="medium" {% if issue.priority == 'medium' %}selected{% endif %}>Medium - Needs attention</option>
+                                        <option value="high" {% if issue.priority == 'high' %}selected{% endif %}>High - Urgent issue</option>
+                                        <option value="critical" {% if issue.priority == 'critical' %}selected{% endif %}>Critical - Emergency situation</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Issue Type -->
+                            <div class="mb-4">
+                                <label class="form-label">Issue Type *</label>
+                                <select class="form-select" name="issue_type" required>
+                                    <option value="power_outage" {% if issue.issue_type == 'power_outage' %}selected{% endif %}>Power Outage</option>
+                                    <option value="voltage_fluctuation" {% if issue.issue_type == 'voltage_fluctuation' %}selected{% endif %}>Voltage Fluctuation</option>
+                                    <option value="meter_problem" {% if issue.issue_type == 'meter_problem' %}selected{% endif %}>Meter Problem</option>
+                                    <option value="billing_dispute" {% if issue.issue_type == 'billing_dispute' %}selected{% endif %}>Billing Dispute</option>
+                                    <option value="safety_hazard" {% if issue.issue_type == 'safety_hazard' %}selected{% endif %}>Safety Hazard</option>
+                                    <option value="equipment_damage" {% if issue.issue_type == 'equipment_damage' %}selected{% endif %}>Equipment Damage</option>
+                                    <option value="street_light_fault" {% if issue.issue_type == 'street_light_fault' %}selected{% endif %}>Street Light Fault</option>
+                                    <option value="transformer_issue" {% if issue.issue_type == 'transformer_issue' %}selected{% endif %}>Transformer Issue</option>
+                                    <option value="wire_fault" {% if issue.issue_type == 'wire_fault' %}selected{% endif %}>Wire Fault</option>
+                                    <option value="electric_shock" {% if issue.issue_type == 'electric_shock' %}selected{% endif %}>Electric Shock</option>
+                                    <option value="other" {% if issue.issue_type == 'other' %}selected{% endif %}>Other</option>
+                                </select>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label class="form-label">Detailed Description *</label>
+                                <textarea class="form-control" name="description" rows="5" required>{{ issue.description }}</textarea>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-msedcl">
+                                    <i class="fas fa-save me-1"></i> Update Issue
+                                </button>
+                                <a href="{{ url_for('track_issues') }}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-1"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Audit Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fas fa-history me-2"></i>Update History
+                    </div>
+                    <div class="card-body">
+                        <div id="auditLogContent">
+                            <div class="text-center py-3">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading update history...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Edit Issue page loaded');
+        
+        // Get issue ID from the page - using multiple methods for reliability
+        var issueId = getIssueIdFromPage();
+        
+        if (issueId) {
+            console.log('Loading audit log for issue:', issueId);
+            loadAuditLog(issueId);
+        } else {
+            console.error('Could not determine issue ID');
+            showAuditLogError('Could not load issue information.');
+        }
+        
+        // Form submission
+        var editIssueForm = document.getElementById('editIssueForm');
+        if (editIssueForm) {
+            editIssueForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                var submitBtn = this.querySelector('button[type="submit"]');
+                var originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Updating...';
+                submitBtn.disabled = true;
+
+                var formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
+                    if (data.success) {
+                        alert('Issue updated successfully!');
+                        window.location.href = '/track-issues';
+                    } else {
+                        throw new Error(data.error || 'Failed to update issue');
+                    }
+                })
+                .catch(function(error) {
+                    alert('Error updating issue: ' + error.message);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+    });
+    
+    function getIssueIdFromPage() {
+        // Method 1: Try to get from URL
+        var pathArray = window.location.pathname.split('/');
+        var issueIdFromUrl = pathArray[pathArray.length - 1];
+        
+        // Method 2: Try to get from page title
+        var pageTitle = document.title;
+        var issueIdMatch = pageTitle.match(/#(\d+)/);
+        var issueIdFromTitle = issueIdMatch ? issueIdMatch[1] : null;
+        
+        // Method 3: Try to get from hidden element (if you add one)
+        var hiddenElement = document.getElementById('issueIdData');
+        var issueIdFromElement = hiddenElement ? hiddenElement.getAttribute('data-issue-id') : null;
+        
+        // Return the first valid issue ID found
+        return issueIdFromUrl || issueIdFromTitle || issueIdFromElement;
+    }
+    
+    function loadAuditLog(issueId) {
+        if (!issueId) {
+            showAuditLogError('Issue ID not found.');
+            return;
+        }
+        
+        console.log('Fetching audit log for issue:', issueId);
+        
+        fetch('/api/issue-audit-log/' + issueId)
+            .then(function(response) {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(function(data) {
+                console.log('Audit log response:', data);
+                if (data.success) {
+                    displayAuditLog(data.logs);
+                } else {
+                    showAuditLogError(data.error || 'Could not load update history.');
+                }
+            })
+            .catch(function(error) {
+                console.error('Error loading audit log:', error);
+                showAuditLogError('Error loading update history: ' + error.message);
+            });
+    }
+    
+    function displayAuditLog(logs) {
+        var auditLogContent = document.getElementById('auditLogContent');
+        if (!auditLogContent) {
+            console.error('Audit log content element not found');
+            return;
+        }
+        
+        if (!logs || logs.length === 0) {
+            auditLogContent.innerHTML = 
+                '<div class="text-center py-3 text-muted">' +
+                '<i class="fas fa-history fa-2x mb-2"></i>' +
+                '<p>No update history found for this issue.</p>' +
+                '<small class="text-muted">Updates will appear here when changes are made.</small>' +
+                '</div>';
+            return;
+        }
+        
+        var logItems = '';
+        for (var i = 0; i < logs.length; i++) {
+            var log = logs[i];
+            var actionText = formatActionType(log.action_type);
+            var timestamp = new Date(log.changed_at).toLocaleString();
+            
+            logItems += 
+                '<div class="border-bottom pb-2 mb-2">' +
+                '<div class="d-flex justify-content-between align-items-start">' +
+                '<div>' +
+                '<strong class="text-capitalize d-block">' + actionText + '</strong>';
+            
+            if (log.old_values && log.new_values) {
+                logItems += '<small class="text-muted">Details: Issue information was updated</small>';
+            }
+            
+            logItems += 
+                '</div>' +
+                '<small class="text-muted text-nowrap">' + timestamp + '</small>' +
+                '</div>' +
+                '</div>';
+        }
+        
+        auditLogContent.innerHTML = logItems;
+    }
+    
+    function formatActionType(actionType) {
+        var actionMap = {
+            'CREATED': 'Issue Created',
+            'UPDATED': 'Issue Updated', 
+            'VIEWED': 'Issue Viewed',
+            'STATUS_CHANGED': 'Status Changed'
+        };
+        return actionMap[actionType] || actionType.toLowerCase().replace('_', ' ');
+    }
+    
+    function showAuditLogError(message) {
+        var auditLogContent = document.getElementById('auditLogContent');
+        if (auditLogContent) {
+            auditLogContent.innerHTML = 
+                '<div class="alert alert-warning">' +
+                '<i class="fas fa-exclamation-triangle me-2"></i>' +
+                message +
+                '</div>';
+        }
+    }
+</script>
+</body>
+</html>
